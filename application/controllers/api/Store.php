@@ -1002,17 +1002,32 @@ class Store extends BD_Controller {
       $result   = $query->result();
 
       if (!empty($result)) {
-        $result["header"] = "Header Exist Ada";
-      } else {
-        $result["header"] = "Header Insert";
+        $result["MSG"]              = " Already Exist";
+        $result["PLUG_NO"]          = $input["header"]["PLUG_NO"];
+        $result["PLUG_CREATE_DATE"] = $input["header"]["PLUG_CREATE_DATE"];
+        $result["PLUG__CREATE_BY"]  = $input["header"]["PLUG__CREATE_BY"];
       }
 
       $head     = $repodb->set($header)->get_compiled_insert('TX_REQ_PLUG_HDR');
       $this->reponpks->query($head);
 
+      if ($this->reponpks->query($head)) {
+        $result["MSG"]              = " Success";
+        $result["PLUG_NO"]          = $input["header"]["PLUG_NO"];
+        $result["PLUG_CREATE_DATE"] = $input["header"]["PLUG_CREATE_DATE"];
+        $result["PLUG__CREATE_BY"]  = $input["header"]["PLUG__CREATE_BY"];
+      }
+
       foreach ($detail as $detail) {
         $det    = $db->set($detail)->get_compiled_insert('TX_REQ_PLUG_DTL');
         $this->reponpks->query($det);
+        if ($this->reponpks->query($det)) {
+          $result["DETAIL"][] = [
+                                  "PLUG_DTL_CONT" => $detail["PLUG_DTL_CONT"],
+                                  "PLUG_DTL_COMMODITY" => $detail["PLUG_DTL_COMMODITY"],
+                                  "PLUG_DTL_COUNTER" => $detail["PLUG_DTL_COUNTER"]
+                                ];
+        }
       }
 
       // JSON Response
@@ -1150,9 +1165,15 @@ class Store extends BD_Controller {
           )";
 
           $insertHDR = $this->reponpks->query($query);
-          $result["header"] = "1. Header Sukses | " . $REQ_NO . " " . date('Y-m-d H:i:s') . "<br>\n";
+          $result["MSG"]          = " Success";
+          $result["REQ_NO"]       = $input["header"]["REQ_NO"];
+          $result["NO_NOTA"]      = $input["header"]["NO_NOTA"];
+          $result["NM_CONSIGNEE"] = $input["header"]["NM_CONSIGNEE"];
         } else {
-          $result["header"] = "Header Exist REQUEST_NO = " . $REQ_NO . " <br>\n";
+          $result["MSG"]          = " Already Exist";
+          $result["REQ_NO"]       = $input["header"]["REQ_NO"];
+          $result["NO_NOTA"]      = $input["header"]["NO_NOTA"];
+          $result["NM_CONSIGNEE"] = $input["header"]["NM_CONSIGNEE"];
           $insertHDR = true;
           $IDheader = $resultCek[0]['REQUEST_ID'];
         }
@@ -1207,7 +1228,9 @@ class Store extends BD_Controller {
               '" . $REQ_DTL_OWNER_NAME . "'
               )";
               $resultDtl = $this->reponpks->query($queryDTL);
-              if ($resultDtl) $result["detail"] = "Detail Success | " . $REQ_DTL_CONT . " " . date('Y-m-d H:i:s') . "<br>\n";
+              if ($resultDtl) {
+                $result["DETAIL"][] = ["REQ_DTL_CONT" => $val["REQ_DTL_CONT"], "REQ_DTL_OWNER_NAME" => $val["REQ_DTL_OWNER_NAME"]];
+              }
 
 
               if ($REQUEST_DTL_OWNER_CODE != '') {
@@ -1241,22 +1264,21 @@ class Store extends BD_Controller {
               '" . $RECEIVING_DARI . "',
               NULL)");
 
-              //   $sqlcekmstcont = "SELECT CONTAINER_NO FROM TM_CONTAINER WHERE CONTAINER_NO='".$REQ_DTL_CONT."' AND CONTAINER_BRANCH_ID = ".$branch." ";
-              //   $resultCekmstcont = $this->db->query($sqlcekmstcont);
-              //   $totalcekmstcont = $resultCekmstcont->num_rows();
-              //   if($totalcekmstcont >0){
-              //     if($REQUEST_DTL_OWNER_CODE != '') {
-              //       $updatecontowner = "UPDATE TM_CONTAINER SET CONTAINER_OWNER = '".$REQUEST_DTL_OWNER_CODE."' WHERE CONTAINER_NO='".$REQ_DTL_CONT."' AND CONTAINER_BRANCH_ID = ".$branch." ";
-              //       $this->db->query($updatecontowner);
-              //     }
-              //   }
-              // }
-
+                $sqlcekmstcont = "SELECT CONTAINER_NO FROM TM_CONTAINER WHERE CONTAINER_NO='".$REQ_DTL_CONT."' AND CONTAINER_BRANCH_ID = ".$branch." ";
+                $resultCekmstcont = $this->db->query($sqlcekmstcont);
+                $totalcekmstcont = $resultCekmstcont->num_rows();
+                if($totalcekmstcont >0){
+                  if($REQUEST_DTL_OWNER_CODE != '') {
+                    $updatecontowner = "UPDATE TM_CONTAINER SET CONTAINER_OWNER = '".$REQUEST_DTL_OWNER_CODE."' WHERE CONTAINER_NO='".$REQ_DTL_CONT."' AND CONTAINER_BRANCH_ID = ".$branch." ";
+                    $this->db->query($updatecontowner);
+                  }
+                }
             } else {
-              $result["detail"] = "Detail Exist <br>\n";
+              $result["DETAIL"][] = ["REQ_DTL_CONT" => $val["REQ_DTL_CONT"], "REQ_DTL_OWNER_NAME" => $val["REQ_DTL_OWNER_NAME"]];
             }
           }
         }
+
         // Syncronize Database PlG - PLG_REPO
         $link        = oci_connect('NPKS_PLG_REPO', 'npksplgrepo', '10.88.48.34:1521/INVDB');
         // Syn Header
