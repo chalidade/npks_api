@@ -81,15 +81,20 @@ class Store extends BD_Controller {
       $url        = explode('encode=',$_SERVER['REQUEST_URI']);
 
       if (!isset($url[1])) {
+        $encode   = "false";
         $request  = $this->post();
         $input    = json_decode(json_encode($this->post()), TRUE);
       } else {
+        $encode   = "true";
         $input    = json_decode(json_encode($this->post()), TRUE);
-        $input    = json_decode($input["request"], TRUE);
+        $input    =  json_decode(base64_decode($input['request']),TRUE);
       }
 
+      // header('Content-Type: application/json');
+      // echo json_encode($input);
+
       $action     = $input["action"]."_post";
-      $this->$action($input, $branch);
+      $this->$action($input, $branch, $encode);
     }
 
     // New
@@ -322,7 +327,8 @@ class Store extends BD_Controller {
       echo json_encode($result);
     }
 
-    function getStuffing_post($input, $branch) {
+    // Done
+    function getStuffing_post($input, $branch, $encode) {
       $this->auth_basic();
       $devdb                            = $this->db;
       $repodb                           = $this->reponpks;
@@ -433,9 +439,17 @@ class Store extends BD_Controller {
                                             )
                                           ";
           $resultHDR                      = $repodb->query($insertHDR);
-          $result["header"]               = "1. Header Sukses | ".$REQ_NO." ".date('Y-m-d H:i:s')."<br>\n";
+          $result["SUCCESS"]              = "true";
+          $result["MSG"]                  = " Success";
+          $result["REQ_NO"]               = $input["header"]["REQ_NO"];
+          $result["NO_NOTA"]              = $input["header"]["NO_NOTA"];
+          $result["NM_CONSIGNEE"]         = $input["header"]["NM_CONSIGNEE"];
         } else {
-          $result["header"]               = "Header Exist REQ_NO = ".$REQ_NO." <br>\n";
+          $result["SUCCESS"]              = "false";
+          $result["MSG"]                  = " Already Exist";
+          $result["REQ_NO"]               = $input["header"]["REQ_NO"];
+          $result["NO_NOTA"]              = $input["header"]["NO_NOTA"];
+          $result["NM_CONSIGNEE"]         = $input["header"]["NM_CONSIGNEE"];
           $resultHDR                      = true;
           $IDheader                       = $resultCek[0]['STUFF_ID'];
       }
@@ -569,7 +583,17 @@ class Store extends BD_Controller {
               $resultDtl                   = $repodb->query($insertDTL);
 
               if($resultDtl)
-                $result["detail"]          = $a.". Detail Success | ".$REQ_DTL_CONT." ".date('Y-m-d H:i:s')."<br>\n";
+                $result["DETAIL"][] = [
+                  "REQ_DTL_CONT"               => $REQ_DTL_CONT,
+                  "REQ_DTL_COMMODITY"          => $REQ_DTL_COMMODITY,
+                  "REQ_DTL_CONT_HAZARD"        => $REQ_DTL_CONT_HAZARD,
+                  "REQ_DTL_SIZE"               => $REQ_DTL_SIZE,
+                  "REQ_DTL_TYPE"               => $REQ_DTL_TYPE,
+                  "REQ_DTL_REMARK_SP2"         => $REQ_DTL_REMARK_SP2,
+                  "REQ_DTL_ORIGIN"             => $REQ_DTL_ORIGIN,
+                  "STUFF_DTL_START_STUFF_PLAN" => $STUFF_DTL_START_STUFF_PLAN,
+                  "STUFF_DTL_END_STUFF_PLAN"   => $STUFF_DTL_END_STUFF_PLAN
+                ];
 
               if($PERP_DARI !="") {
                 $updateStuffTDL            = "
@@ -621,7 +645,17 @@ class Store extends BD_Controller {
                     '".$REQ_DTL_ORIGIN."',
                     NULL)");
             } else {
-              $result["detail"] = "Detail Exist <br>\n";
+              $result["DETAIL"][] = [
+                "REQ_DTL_CONT"               => $REQ_DTL_CONT,
+                "REQ_DTL_COMMODITY"          => $REQ_DTL_COMMODITY,
+                "REQ_DTL_CONT_HAZARD"        => $REQ_DTL_CONT_HAZARD,
+                "REQ_DTL_SIZE"               => $REQ_DTL_SIZE,
+                "REQ_DTL_TYPE"               => $REQ_DTL_TYPE,
+                "REQ_DTL_REMARK_SP2"         => $REQ_DTL_REMARK_SP2,
+                "REQ_DTL_ORIGIN"             => $REQ_DTL_ORIGIN,
+                "STUFF_DTL_START_STUFF_PLAN" => $STUFF_DTL_START_STUFF_PLAN,
+                "STUFF_DTL_END_STUFF_PLAN"   => $STUFF_DTL_END_STUFF_PLAN
+              ];
             }
             $a++;
         }
@@ -655,10 +689,16 @@ class Store extends BD_Controller {
 
       // JSON Response
       header('Content-Type: application/json');
-      echo json_encode($result);
+      if ($encode == "true") {
+        $out["result"] = base64_encode(json_encode($result));
+        echo json_encode($out);
+      } else {
+        echo json_encode($result);
+      }
     }
 
-    function getStripping_post($input, $branch) {
+    // Done
+    function getStripping_post($input, $branch, $encode) {
       // Initialization
       $this->auth_basic();
       $devdb                        = $this->db;
@@ -763,11 +803,19 @@ class Store extends BD_Controller {
                                       )";
 
           $resultHDR                  = $repodb->query($insertHDR);
-          $result["header"]           = "Header Insert | REQ_NO = $REQ_NO";
+          $result["SUCCESS"]          = "true";
+          $result["MSG"]              = "Success";
+          $result["REQ_NO"]           = $REQ_NO;
+          $result["NO_NOTA"]          = $NO_NOTA;
+          $result["NM_CONSIGNEE"]     = $CONSIGNE_ID;
         } else {
+          $result["SUCCESS"]          = "false";
+          $result["MSG"]              = "Already Exist";
+          $result["REQ_NO"]           = $REQ_NO;
+          $result["NO_NOTA"]          = $NO_NOTA;
+          $result["NM_CONSIGNEE"]     = $CONSIGNE_ID;
           $resultHDR                  = true;
           $IDheader                   = $resultCek[0]['STRIP_ID'];
-          $result["header"]           = "Header Exists | REQ_NO = $REQ_NO";
         }
 
         if($resultHDR) {
@@ -890,7 +938,17 @@ class Store extends BD_Controller {
                                          )";
               $resultDtl                 = $repodb->query($insertDTL);
               if($resultDtl) {
-                $result["detail"][]      = "Detail Insert | REQ_NO = $REQ_DTL_CONT".date('Y-m-d H:i:s');
+                $result["DETAIL"][] = [
+                                      "REQ_DTL_CONT"                => $REQ_DTL_CONT,
+                                      "REQ_DTL_COMMODITY"           => $REQ_DTL_COMMODITY,
+                                      "STRIP_DTL_ORIGIN"            => $STRIP_DTL_ORIGIN,
+                                      "REQ_DTL_CONT_HAZARD"         => $REQ_DTL_CONT_HAZARD,
+                                      "REQ_DTL_SIZE"                => $REQ_DTL_SIZE,
+                                      "REQ_DTL_TYPE"                => $REQ_DTL_TYPE,
+                                      "STRIP_DTL_START_STRIP_PLAN"  => $STRIP_DTL_START_STRIP_PLAN,
+                                      "STRIP_DTL_END_STRIP_PLAN"    => $STRIP_DTL_END_STRIP_PLAN
+
+                                      ];
               }
 
               if(!empty($PERP_DARI)) {
@@ -955,7 +1013,17 @@ class Store extends BD_Controller {
                       NULL
                       )");
             } else {
-              $result["detail"][]  = "Detail Exist | REQ_NO = $REQ_DTL_CONT".date('Y-m-d H:i:s');
+              $result["DETAIL"][] = [
+                                    "REQ_DTL_CONT"                => $REQ_DTL_CONT,
+                                    "REQ_DTL_COMMODITY"           => $REQ_DTL_COMMODITY,
+                                    "STRIP_DTL_ORIGIN"            => $STRIP_DTL_ORIGIN,
+                                    "REQ_DTL_CONT_HAZARD"         => $REQ_DTL_CONT_HAZARD,
+                                    "REQ_DTL_SIZE"                => $REQ_DTL_SIZE,
+                                    "REQ_DTL_TYPE"                => $REQ_DTL_TYPE,
+                                    "STRIP_DTL_START_STRIP_PLAN"  => $STRIP_DTL_START_STRIP_PLAN,
+                                    "STRIP_DTL_END_STRIP_PLAN"    => $STRIP_DTL_END_STRIP_PLAN
+
+                                    ];
             }
             $a++;
         }
@@ -989,9 +1057,15 @@ class Store extends BD_Controller {
 
       // JSON Response
       header('Content-Type: application/json');
-      echo json_encode($result);
+      if ($encode == "true") {
+        $out["result"] = base64_encode(json_encode($result));
+        echo json_encode($out);
+      } else {
+        echo json_encode($result);
+      }
     }
 
+    // Waiting
     function getPlugging_post($input, $branch) {
       $db       = $this->db;
       $repodb   = $this->reponpks;
@@ -1002,39 +1076,30 @@ class Store extends BD_Controller {
       $result   = $query->result();
 
       if (!empty($result)) {
-        $result["MSG"]              = " Already Exist";
-        $result["PLUG_NO"]          = $input["header"]["PLUG_NO"];
-        $result["PLUG_CREATE_DATE"] = $input["header"]["PLUG_CREATE_DATE"];
-        $result["PLUG__CREATE_BY"]  = $input["header"]["PLUG__CREATE_BY"];
+        $result["header"] = "Header Exist Ada";
+      } else {
+        $result["header"] = "Header Insert";
       }
 
       $head     = $repodb->set($header)->get_compiled_insert('TX_REQ_PLUG_HDR');
       $this->reponpks->query($head);
 
-      if ($this->reponpks->query($head)) {
-        $result["MSG"]              = " Success";
-        $result["PLUG_NO"]          = $input["header"]["PLUG_NO"];
-        $result["PLUG_CREATE_DATE"] = $input["header"]["PLUG_CREATE_DATE"];
-        $result["PLUG__CREATE_BY"]  = $input["header"]["PLUG__CREATE_BY"];
-      }
-
       foreach ($detail as $detail) {
         $det    = $db->set($detail)->get_compiled_insert('TX_REQ_PLUG_DTL');
         $this->reponpks->query($det);
-        if ($this->reponpks->query($det)) {
-          $result["DETAIL"][] = [
-                                  "PLUG_DTL_CONT" => $detail["PLUG_DTL_CONT"],
-                                  "PLUG_DTL_COMMODITY" => $detail["PLUG_DTL_COMMODITY"],
-                                  "PLUG_DTL_COUNTER" => $detail["PLUG_DTL_COUNTER"]
-                                ];
-        }
       }
 
       // JSON Response
       header('Content-Type: application/json');
-      echo json_encode($result);
+      if ($encode == "true") {
+        $out["result"] = base64_encode(json_encode($result));
+        echo json_encode($out);
+      } else {
+        echo json_encode($result);
+      }
     }
 
+    //Waiting
     function getFumigasi_post($input, $branch) {
       $db       = $this->db;
       $repodb   = $this->reponpks;
@@ -1060,14 +1125,20 @@ class Store extends BD_Controller {
 
       // JSON Response
       header('Content-Type: application/json');
-      echo json_encode($result);
+      if ($encode == "true") {
+        $out["result"] = base64_encode(json_encode($result));
+        echo json_encode($out);
+      } else {
+        echo json_encode($result);
+      }
     }
 
-    function getReceiving_post($input, $branch) {
+    // Done
+    function getReceiving_post($input, $branch, $encode) {
       $this->auth_basic();
       $branch             = 3;
       //header
-      $header             = $this->post('header');
+      $header             = $input['header'];
 
       $REQ_NO             = $header['REQ_NO'];
       $REQ_RECEIVING_DATE = $header['REQ_RECEIVING_DATE'];
@@ -1165,11 +1236,13 @@ class Store extends BD_Controller {
           )";
 
           $insertHDR = $this->reponpks->query($query);
+          $result["SUCCESS"]      = "true";
           $result["MSG"]          = " Success";
           $result["REQ_NO"]       = $input["header"]["REQ_NO"];
           $result["NO_NOTA"]      = $input["header"]["NO_NOTA"];
           $result["NM_CONSIGNEE"] = $input["header"]["NM_CONSIGNEE"];
         } else {
+          $result["SUCCESS"]      = "false";
           $result["MSG"]          = " Already Exist";
           $result["REQ_NO"]       = $input["header"]["REQ_NO"];
           $result["NO_NOTA"]      = $input["header"]["NO_NOTA"];
@@ -1180,7 +1253,7 @@ class Store extends BD_Controller {
 
 
         //detail
-        $detail = $this->post('arrdetail');
+        $detail = $input['arrdetail'];
         if ($insertHDR) {
           foreach ($detail as $val) {
 
@@ -1304,9 +1377,15 @@ class Store extends BD_Controller {
 
         $stmtDetail       = oci_parse($link, $sqlDetail);
         $queryDetail      = oci_execute($stmtDetail);
+
         // JSON Response
         header('Content-Type: application/json');
-        echo json_encode($result);
+        if ($encode == "true") {
+          $out["result"] = base64_encode(json_encode($result));
+          echo json_encode($out);
+        } else {
+          echo json_encode($result);
+        }
       }
 
     function getAlihKapalStuffing_post($input, $branch) {
@@ -1349,7 +1428,7 @@ class Store extends BD_Controller {
         $this->auth_basic();
         $branch             = 3;
         //header
-        $header             = $this->post('header');
+        $header             = $input['header'];
 
         $REQ_NO             = $header['REQ_NO'];
         $REQ_RECEIVING_DATE = $header['REQ_RECEIVING_DATE'];
@@ -1452,7 +1531,7 @@ class Store extends BD_Controller {
         }
 
         //detail
-        $detail = $this->post('arrdetail');
+        $detail = $input['arrdetail'];
         if ($insertHDR) {
           foreach ($detail as $val) {
 

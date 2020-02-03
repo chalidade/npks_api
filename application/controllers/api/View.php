@@ -81,19 +81,25 @@ class View extends BD_Controller {
       $url        = explode('encode=',$_SERVER['REQUEST_URI']);
 
       if (!isset($url[1])) {
+        $encode   = "false";
         $request  = $this->post();
         $input    = json_decode(json_encode($this->post()), TRUE);
       } else {
+        $encode   = "true";
+        $input    = $this->post();
         $input    = json_decode(json_encode($this->post()), TRUE);
-        $input    = json_decode($input["request"], TRUE);
+        $input    =  json_decode(base64_decode($input['request']),TRUE);
       }
 
+      // Encode json request
+      // echo base64_encode(json_encode($input));
+
       $action     = $input["action"]."_post";
-      $this->$action($input, $branch);
+      $this->$action($input, $branch, $encode);
     }
 
     // New
-    function generateGetIn_post($input, $branch) {
+    function generateGetIn_post($input, $branch, $encode) {
       // Initialization
       header('Content-Type: application/json');
       $this->auth_basic();
@@ -133,10 +139,19 @@ class View extends BD_Controller {
         }
       }
 
-      echo json_encode($newdt);
+
+      $out["count"]   = count($newdt);
+      $out["result"]  = $newdt;
+
+      if ($encode == "true") {
+        $result["result"] = base64_encode(json_encode($out));
+        echo json_encode($result);
+      } else {
+        echo json_encode($out);
+      }
     }
 
-    function generateGetOut_post($input, $branch) {
+    function generateGetOut_post($input, $branch, $encode) {
       // Initialization
       header('Content-Type: application/json');
       $this->auth_basic();
@@ -180,10 +195,18 @@ class View extends BD_Controller {
         }
       }
 
-      echo json_encode($newdt);
+      $out["count"]   = count($newdt);
+      $out["result"]  = $newdt;
+
+      if ($encode == "true") {
+        $result["result"] = base64_encode(json_encode($out));
+        echo json_encode($result);
+      } else {
+        echo json_encode($out);
+      }
     }
 
-    function generateRealStuffing_post($input, $branch) {
+    function generateRealStuffing_post($input, $branch, $encode) {
       // Initialization
       header('Content-Type: application/json');
       $this->auth_basic();
@@ -226,10 +249,18 @@ class View extends BD_Controller {
         }
       }
 
-      echo json_encode($newdt);
+      $out["count"]   = count($newdt);
+      $out["result"]  = $newdt;
+
+      if ($encode == "true") {
+        $result["result"] = base64_encode(json_encode($out));
+        echo json_encode($result);
+      } else {
+        echo json_encode($out);
+      }
     }
 
-    function generatePlacement_post($input, $branch) {
+    function generatePlacement_post($input, $branch, $encode) {
       // Initialization
       header('Content-Type: application/json');
       $this->auth_basic();
@@ -274,14 +305,22 @@ class View extends BD_Controller {
         }
       }
 
-      echo json_encode($newdt);
+      $out["count"]   = count($newdt);
+      $out["result"]  = $newdt;
+
+      if ($encode == "true") {
+        $result["result"] = base64_encode(json_encode($out));
+        echo json_encode($result);
+      } else {
+        echo json_encode($out);
+      }
     }
 
-    function generateGateInCargo_post($input, $branch) {
+    function generateGateInCargo_post($input, $branch, $encode) {
       echo "GateInCargo";
     }
 
-    function generateRealStripping_post($input, $branch) {
+    function generateRealStripping_post($input, $branch, $encode) {
       // Initialization
       header('Content-Type: application/json');
       $this->auth_basic();
@@ -343,7 +382,15 @@ class View extends BD_Controller {
         }
       }
 
-      echo json_encode($newdt);
+      $out["count"]   = count($newdt);
+      $out["result"]  = $newdt;
+
+      if ($encode == "true") {
+        $result["result"] = base64_encode(json_encode($out));
+        echo json_encode($result);
+      } else {
+        echo json_encode($out);
+      }
     }
 
 }
