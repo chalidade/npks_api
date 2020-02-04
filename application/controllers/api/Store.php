@@ -97,8 +97,8 @@ class Store extends BD_Controller {
       $this->$action($input, $branch, $encode);
     }
 
-    // New
-    function getDelivery_post($input, $branch) {
+    // Done
+    function getDelivery_post($input, $branch, $encode) {
       $this->auth_basic();
       $branch              = 3;
       //header
@@ -197,8 +197,17 @@ class Store extends BD_Controller {
           )";
 
         $insertHDR = $this->reponpks->query($query);
-        $result["header"] = "1. Header Sukses | " . $REQ_NO . " " . date('Y-m-d H:i:s') . "<br>\n";
+        $result["SUCCESS"]      = "true";
+        $result["MSG"]          = " Success";
+        $result["REQ_NO"]       = $input["header"]["REQ_NO"];
+        $result["NO_NOTA"]      = $input["header"]["NO_NOTA"];
+        $result["NM_CONSIGNEE"] = $input["header"]["NM_CONSIGNEE"];
       } else {
+        $result["SUCCESS"]      = "false";
+        $result["MSG"]          = " Already Exist";
+        $result["REQ_NO"]       = $input["header"]["REQ_NO"];
+        $result["NO_NOTA"]      = $input["header"]["NO_NOTA"];
+        $result["NM_CONSIGNEE"] = $input["header"]["NM_CONSIGNEE"];
         $result["header"] = "Header Exist REQUEST_NO = " . $REQ_NO . " <br>\n";
         $insertHDR = true;
         $IDheader = $resultCek[0]['REQ_ID'];
@@ -218,15 +227,15 @@ class Store extends BD_Controller {
             $resultIDTL = $this->db->query($sqlIDTL)->result_array();
             $IDdetail = $resultIDTL[0]['ID'];
 
-            $REQ_DTL_CONT = $val['REQ_DTL_CONT'];
-            $REQ_DTL_CONT_STATUS = $val['REQ_DTL_CONT_STATUS'];
-            $REQ_DTL_COMMODITY = $val['REQ_DTL_COMMODITY'];
-            $REQ_DTL_VIA = $val['REQ_DTL_VIA'];
-            $REQ_DTL_TYPE = $val['REQ_DTL_TYPE'];
-            $REQ_DTL_SIZE = $val['REQ_DTL_SIZE'];
-            $REQ_DTL_DEL_DATE = $val['REQ_DTL_DEL_DATE'];
-            $REQ_DTL_CONT_HAZARD = $val['REQ_DTL_CONT_HAZARD'];
-            $REQ_DTL_NO_SEAL = $val['REQ_DTL_NO_SEAL'];
+            $REQ_DTL_CONT               = $val['REQ_DTL_CONT'];
+            $REQ_DTL_CONT_STATUS        = $val['REQ_DTL_CONT_STATUS'];
+            $REQ_DTL_COMMODITY          = $val['REQ_DTL_COMMODITY'];
+            $REQ_DTL_VIA                = $val['REQ_DTL_VIA'];
+            $REQ_DTL_TYPE               = $val['REQ_DTL_TYPE'];
+            $REQ_DTL_SIZE               = $val['REQ_DTL_SIZE'];
+            $REQ_DTL_DEL_DATE           = $val['REQ_DTL_DEL_DATE'];
+            $REQ_DTL_CONT_HAZARD        = $val['REQ_DTL_CONT_HAZARD'];
+            $REQ_DTL_NO_SEAL            = $val['REQ_DTL_NO_SEAL'];
 
             $queryDTL = "
                     INSERT INTO TX_REQ_DELIVERY_DTL
@@ -256,7 +265,18 @@ class Store extends BD_Controller {
                       '" . $REQ_DTL_NO_SEAL . "'
                     )";
             $resultDtl = $this->reponpks->query($queryDTL);
-            if ($resultDtl) $result["detail"] = "Detail Success | " . $REQ_DTL_CONT . " " . date('Y-m-d H:i:s') . "<br>\n";
+            if ($resultDtl)
+            $result["DETAIL"][] = [
+              "REQ_DTL_CONT"               => $val['REQ_DTL_CONT'],
+              "REQ_DTL_CONT_STATUS"        => $val['REQ_DTL_CONT_STATUS'],
+              "REQ_DTL_COMMODITY"          => $val['REQ_DTL_COMMODITY'],
+              "REQ_DTL_VIA"                => $val['REQ_DTL_VIA'],
+              "REQ_DTL_TYPE"               => $val['REQ_DTL_TYPE'],
+              "REQ_DTL_SIZE"               => $val['REQ_DTL_SIZE'],
+              "REQ_DTL_DEL_DATE"           => $val['REQ_DTL_DEL_DATE'],
+              "REQ_DTL_CONT_HAZARD"        => $val['REQ_DTL_CONT_HAZARD'],
+              "REQ_DTL_NO_SEAL"            => $val['REQ_DTL_NO_SEAL']
+            ];
 
             if ($PERP_DARI != "") {
               echo $a . ", perpanjangan dari  | " . $PERP_DARI . "~" . $REQ_DTL_CONT . " " . date('Y-m-d H:i:s') . "<br>\n";
@@ -292,7 +312,17 @@ class Store extends BD_Controller {
                     NULL,
                     NULL)");
           } else {
-            $result["detail"] = "Detail Exist <br>\n";
+            $result["DETAIL"][] = [
+              "REQ_DTL_CONT"               => $val['REQ_DTL_CONT'],
+              "REQ_DTL_CONT_STATUS"        => $val['REQ_DTL_CONT_STATUS'],
+              "REQ_DTL_COMMODITY"          => $val['REQ_DTL_COMMODITY'],
+              "REQ_DTL_VIA"                => $val['REQ_DTL_VIA'],
+              "REQ_DTL_TYPE"               => $val['REQ_DTL_TYPE'],
+              "REQ_DTL_SIZE"               => $val['REQ_DTL_SIZE'],
+              "REQ_DTL_DEL_DATE"           => $val['REQ_DTL_DEL_DATE'],
+              "REQ_DTL_CONT_HAZARD"        => $val['REQ_DTL_CONT_HAZARD'],
+              "REQ_DTL_NO_SEAL"            => $val['REQ_DTL_NO_SEAL']
+            ];
           }
         }
       }
@@ -324,7 +354,12 @@ class Store extends BD_Controller {
 
       // JSON Response
       header('Content-Type: application/json');
-      echo json_encode($result);
+      if ($encode == "true") {
+        $out["result"] = base64_encode(json_encode($result));
+        echo json_encode($out);
+      } else {
+        echo json_encode($result);
+      }
     }
 
     // Done
