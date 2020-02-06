@@ -1171,9 +1171,9 @@ class Store extends BD_Controller {
     // Done
     function getReceiving_post($input, $branch, $encode) {
       $this->auth_basic();
-      $branch             = 3;
       //header
       $header             = $input['header'];
+      $branch             = $header["BRANCH_ID"];
 
       $REQ_NO             = $header['REQ_NO'];
       $REQ_RECEIVING_DATE = $header['REQ_RECEIVING_DATE'];
@@ -1346,7 +1346,7 @@ class Store extends BD_Controller {
                 $resultCekowner = $this->db->query($sqlcekowner);
                 $totalcekowner = $resultCekowner->num_rows();
                 if ($totalcekowner <= 0) {
-                  $insertOwner = "INSERT INTO TM_OWNER (OWNER_CODE, OWNER_NAME, OWNER_BRANCH_ID) VALUES ('" . $REQUEST_DTL_OWNER_CODE . "','" . $REQUEST_DTL_OWNER_NAME . "'," . $branch . ")";
+                  $insertOwner = "INSERT INTO TM_OWNER (OWNER_CODE, OWNER_NAME, OWNER_BRANCH_ID) VALUES ('" . $REQUEST_DTL_OWNER_CODE . "','" . $REQ_DTL_OWNER_NAME . "'," . $branch . ")";
                   $this->db->query($insertOwner);
                 }
               }
@@ -1387,31 +1387,40 @@ class Store extends BD_Controller {
           }
         }
 
-        // Syncronize Database PlG - PLG_REPO
-        $link        = oci_connect('NPKS_PLG_REPO', 'npksplgrepo', '10.88.48.34:1521/INVDB');
-        // Syn Header
-        $sqlHeader   = "
-        DECLARE
-        v_flag VARCHAR2(2);
-        v_msg VARCHAR2(100);
-        BEGIN PKG_SYNC_TABLE.P_TX_REQ_RECEIVING_HDR(v_flag,v_msg);
-        end;
-        ";
+        // // Syncronize Database PlG - PLG_REPO
+        // $link        = oci_connect('NPKS_PLG_REPO', 'npksplgrepo', '10.88.48.34:1521/INVDB');
+        // // Syn Header
+        // $sqlHeader   = "
+        // DECLARE
+        // v_flag VARCHAR2(2);
+        // v_msg VARCHAR2(100);
+        // BEGIN PKG_SYNC_TABLE.P_TX_REQ_RECEIVING_HDR(v_flag,v_msg);
+        // end;
+        // ";
+        //
+        // $stmtHeader       = oci_parse($link, $sqlHeader);
+        // $queryHeader      = oci_execute($stmtHeader);
+        //
+        // // Syn Detail
+        // $sqlDetail   = "
+        // DECLARE
+        // v_flag VARCHAR2(2);
+        // v_msg VARCHAR2(100);
+        // BEGIN PKG_SYNC_TABLE.P_TX_REQ_RECEIVING_DTL(v_flag,v_msg);
+        // end;
+        // ";
+        //
+        // $stmtDetail       = oci_parse($link, $sqlDetail);
+        // $queryDetail      = oci_execute($stmtDetail);
 
-        $stmtHeader       = oci_parse($link, $sqlHeader);
-        $queryHeader      = oci_execute($stmtHeader);
-
-        // Syn Detail
-        $sqlDetail   = "
-        DECLARE
-        v_flag VARCHAR2(2);
-        v_msg VARCHAR2(100);
-        BEGIN PKG_SYNC_TABLE.P_TX_REQ_RECEIVING_DTL(v_flag,v_msg);
-        end;
-        ";
-
-        $stmtDetail       = oci_parse($link, $sqlDetail);
-        $queryDetail      = oci_execute($stmtDetail);
+        //start call nodejs
+  				$updateGateJobManager = curl_init(SERVICE_SERVER_NODEJS."/updateGateJobManager?branch=".$branch."");
+  				curl_exec($updateGateJobManager);
+  				curl_close($updateGateJobManager);
+  				$updateReceiving = curl_init(SERVICE_SERVER_NODEJS."/updateReceiving?branch=".$branch."");
+  				curl_exec($updateReceiving);
+  				curl_close($updateReceiving);
+  			//end call nodejs
 
         // JSON Response
         header('Content-Type: application/json');
