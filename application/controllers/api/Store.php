@@ -77,7 +77,6 @@ class Store extends BD_Controller {
 
     public function repo_post() {
       $this->auth_basic();
-      $branch     = 3;
       $url        = explode('encode=',$_SERVER['REQUEST_URI']);
 
       if (!isset($url[1])) {
@@ -93,17 +92,16 @@ class Store extends BD_Controller {
       // header('Content-Type: application/json');
       // echo json_encode($input);
 
+      $branch     = $input["header"]["BRANCH_ID"];
       $action     = $input["action"]."_post";
       $this->$action($input, $branch, $encode);
     }
 
-    // Done
     function getDelivery_post($input, $branch, $encode) {
       $this->auth_basic();
-      $branch              = 3;
       //header
       $header              = $input['header'];
-
+      $branch              = $header["BRANCH_ID"];
       $REQ_NO              = $header['REQ_NO'];
       $REQ_DELIVERY_DATE   = $header['REQ_DELIVERY_DATE'];
       $NO_NOTA             = $header['NO_NOTA'];
@@ -362,12 +360,10 @@ class Store extends BD_Controller {
       }
     }
 
-    // Done
     function getStuffing_post($input, $branch, $encode) {
       $this->auth_basic();
       $devdb                            = $this->db;
       $repodb                           = $this->reponpks;
-      $branch                           = 3;
       $header                           = $input["header"];
       $detail                           = $input["arrdetail"];
 
@@ -732,13 +728,11 @@ class Store extends BD_Controller {
       }
     }
 
-    // Done
     function getStripping_post($input, $branch, $encode) {
       // Initialization
       $this->auth_basic();
       $devdb                        = $this->db;
       $repodb                       = $this->reponpks;
-      $branch                       = 3;
       $header                       = $input["header"];
       $detail                       = $input["arrdetail"];
 
@@ -1100,8 +1094,7 @@ class Store extends BD_Controller {
       }
     }
 
-    // Waiting
-    function getPlugging_post($input, $branch) {
+    function getPlugging_post($input, $branch,$encode) {
       $db       = $this->db;
       $repodb   = $this->reponpks;
       $header   = $input["header"];
@@ -1135,7 +1128,7 @@ class Store extends BD_Controller {
     }
 
     //Waiting
-    function getFumigasi_post($input, $branch) {
+    function getFumigasi_post($input, $branch,$encode) {
       $db       = $this->db;
       $repodb   = $this->reponpks;
       $header   = $input["header"];
@@ -1168,13 +1161,21 @@ class Store extends BD_Controller {
       }
     }
 
+    function getReceivingBrg_post($input,$branch, $encode) {
+      // $qlID = "SELECT SEQ_REQ_DELIVERY_HDR.NEXTVAL AS ID FROM DUAL";
+      // $resultID = $this->db->query($qlID)->result_array();
+      // $IDheader = $resultID[0]['ID'];
+    }
+
+    function getDeliveryBrg_post($input,$branch, $encode) {
+      echo "Berhasil";
+    }
+
     // Done
     function getReceiving_post($input, $branch, $encode) {
       $this->auth_basic();
       //header
       $header             = $input['header'];
-      $branch             = $header["BRANCH_ID"];
-
       $REQ_NO             = $header['REQ_NO'];
       $REQ_RECEIVING_DATE = $header['REQ_RECEIVING_DATE'];
       $NO_NOTA            = $header['NO_NOTA'];
@@ -1432,7 +1433,7 @@ class Store extends BD_Controller {
         }
       }
 
-    function getAlihKapalStuffing_post($input, $branch) {
+    function getAlihKapalStuffing_post($input, $branch,$encode) {
         $devdb                            = $this->db;
         $repodb                           = $this->reponpks;
         $sqlLastDateNota                  = "
@@ -1468,9 +1469,8 @@ class Store extends BD_Controller {
 
       }
 
-    function getReceivingTPK_post($input, $branch) {
+    function getReceivingTPK_post($input, $branch,$encode) {
         $this->auth_basic();
-        $branch             = 3;
         //header
         $header             = $input['header'];
 
