@@ -220,26 +220,13 @@ class View extends BD_Controller {
 
       foreach ($data as $data) {
         // Change Later
-        $sqlgetStuf = "
-                      SELECT * FROM (SELECT D.REAL_YARD_YBC_ID YBC_ID, A.REAL_STUFF_ID, A.REAL_STUFF_CONT NO_CONT, B.STUFF_NO NO_REQUEST,
-                      (SELECT STUFF_DTL_COMMODITY FROM TX_REQ_STUFF_DTL WHERE STUFF_DTL_HDR_ID = B.STUFF_ID AND STUFF_DTL_CONT = A.REAL_STUFF_CONT) COMMODITY,
-                      (SELECT STUFF_DTL_CONT_HAZARD FROM TX_REQ_STUFF_DTL WHERE STUFF_DTL_HDR_ID = B.STUFF_ID AND STUFF_DTL_CONT = A.REAL_STUFF_CONT) HZ,
-                      (SELECT STUFF_DTL_CONT_SIZE FROM TX_REQ_STUFF_DTL WHERE STUFF_DTL_HDR_ID = B.STUFF_ID AND STUFF_DTL_CONT = A.REAL_STUFF_CONT) CONT_SIZE,
-                      (SELECT STUFF_DTL_CONT_TYPE FROM TX_REQ_STUFF_DTL WHERE STUFF_DTL_HDR_ID = B.STUFF_ID AND STUFF_DTL_CONT = A.REAL_STUFF_CONT) CONT_TYPE,
-                      TO_CHAR(B.STUFF_CREATE_DATE,'MM/DD/YYYY HH24:MI:SS') AS TGL_REQUEST, B.STUFF_NO_BOOKING NO_BOOKING, B.STUFF_NO_UKK NO_UKK,
-                      A.REAL_STUFF_BY, TO_CHAR(A.REAL_STUFF_DATE,'MM/DD/YYYY HH24:MI:SS') AS TGL_REALISASI, A.REAL_STUFF_MECHANIC_TOOLS ALAT,
-                      (SELECT STUFF_DTL_REMARK_SP2 FROM TX_REQ_STUFF_DTL WHERE STUFF_DTL_HDR_ID = B.STUFF_ID AND STUFF_DTL_CONT = A.REAL_STUFF_CONT) REMARK_SP2
-                      FROM TX_REAL_STUFF A
-                      INNER JOIN TX_REQ_STUFF_HDR B ON B.STUFF_ID = A.REAL_STUFF_HDR_ID
-                      INNER JOIN TX_REAL_YARD D ON D.REAL_YARD_CONT = A.REAL_STUFF_CONT AND D.REAL_YARD_STATUS = '1'
-                      WHERE A.REAL_STUFF_STATUS = 1
-                      AND A.REAL_STUFF_FL_SEND = 0
-                      AND D.REAL_YARD_USED = 1
-                      ORDER BY A.REAL_STUFF_DATE ASC)Z WHERE ROWNUM <= 1
-                        ";
+        $sqlgetStuf                 = $repodb->where("REAL_STUFF_CONT",$data["NO_CONTAINER"])
+                                             ->where("REAL_STUFF_NOREQ",$data["NO_REQUEST"])
+                                             ->where("REAL_STUFF_BRANCH_ID",$data["BRANCH_ID"])
+                                             ->order_by("REAL_STUFF_DATE", "ASC")
+                                             ->get("TX_REAL_STUFF");
 
-        $resultservices = $npksdb->query($sqlgetStuf);
-        $totalservice = $resultservices->result_array();
+        $totalservice = $sqlgetStuf->result_array();
 
         $data_view = json_encode($totalservice);
         $data_use  = json_decode($data_view);
@@ -274,27 +261,11 @@ class View extends BD_Controller {
 
       foreach ($data as $data) {
         // Change Later
-        $sqlPlacement            = $npksdb->select("
-                                                    A.REAL_YARD_ID,
-                                                    A.REAL_YARD_YBC_ID,
-                                                    B.YBC_SLOT,
-                                                    B.YBC_ROW,
-                                                    B.YBC_BLOCK_ID,
-                                                    A.REAL_YARD_TIER TIER,
-                                                    A.REAL_YARD_NO ID_YARD,
-                                                    UPPER(A.REAL_YARD_CONT) NO_CONTAINER,
-                                                    A.REAL_YARD_REQ_NO NO_REQUEST,
-                                                    A.REAL_YARD_BRANCH_ID,
-                                                    TO_CHAR(A.REAL_YARD_CREATE_DATE,'MM/DD/YYYY HH24:MI:SS') AS TGL_PLACEMENT,
-                                                    A.REAL_YARD_CREATE_BY,
-                                                    A.REAL_YARD_CONT_STATUS CONT_STATUS
-                                                    ")
-                                               ->join('TX_YARD_BLOCK_CELL B', 'B.YBC_ID = A.REAL_YARD_YBC_ID')
-                                               ->where("REAL_YARD_CONT",$data["NO_CONTAINER"])
-                                               ->where("REAL_YARD_REQ_NO",$data["NO_REQUEST"])
-                                               ->where("REAL_YARD_BRANCH_ID",$data["BRANCH_ID"])
-                                               ->order_by("REAL_YARD_CREATE_DATE", "ASC")
-                                               ->get("TX_REAL_YARD A");
+        $sqlPlacement            = $repodb->where("NO_CONTAINER",$data["NO_CONTAINER"])
+                                          ->where("NO_REQUEST",$data["NO_REQUEST"])
+                                          ->where("BRANCH_ID",$data["BRANCH_ID"])
+                                          ->order_by("TGL_PLACEMENT", "ASC")
+                                          ->get("TX_PLACEMENT");
 
         $resultservices       = $sqlPlacement->result_array();
         $data_view            = json_encode($resultservices);
