@@ -76,6 +76,7 @@ class Store extends BD_Controller {
     }
 
     public function repo_post() {
+      header('Content-Type: application/json');
       $this->auth_basic();
       $url        = explode('encode=',$_SERVER['REQUEST_URI']);
 
@@ -89,7 +90,6 @@ class Store extends BD_Controller {
         $input    =  json_decode(base64_decode($input['request']),TRUE);
       }
 
-      // header('Content-Type: application/json');
       // echo json_encode($input);
 
       $branch     = $input["header"]["BRANCH_ID"];
@@ -1095,67 +1095,190 @@ class Store extends BD_Controller {
     }
 
     function getPlugging_post($input, $branch,$encode) {
-      $db       = $this->db;
-      $repodb   = $this->reponpks;
-      $header   = $input["header"];
-      $detail   = $input["arrdetail"];
+      $db                         = $this->db;
+      $repodb                     = $this->reponpks;
+      $header                     = $input["header"];
+      $detail                     = $input["arrdetail"];
 
-      $query    = $repodb->where('PLUG_ID', $header["PLUG_ID"])->where("PLUG_ID", $header["PLUG_ID"])->get('TX_REQ_PLUG_HDR');
-      $result   = $query->result();
+      $query                      = $repodb->where("PLUG_ID", $header["PLUG_ID"])->get('TX_REQ_PLUG_HDR');
+      $resultQuery                = $query->result_array();
 
-      if (!empty($result)) {
-        $result["header"] = "Header Exist Ada";
+
+      if (!empty($resultQuery)) {
+        $result["SUCCESS"]        = "false";
+        $result["MSG"]            = "Already Exist";
+        $result["REQ_NO"]         = $header["PLUG_NO"];
+        $result["NM_CONSIGNEE"]   = $header["PLUG_CONSIGNEE_ID"];
+        $result["STATUS"]         = $header["PLUG_STATUS"];
+
+        $queryDTL                 = $repodb->where("PLUG_DTL_HDR_ID", $header["PLUG_ID"])->get('TX_REQ_PLUG_DTL');
+        $resultDTLQuery           = $queryDTL->result_array();
+
+        foreach ($resultDTLQuery as $valDtl) {
+          $result["DETAIL"][]     = [
+                                    "PLUG_DTL_ID"              => $valDtl["PLUG_DTL_ID"],
+                                    "PLUG_DTL_HDR_ID"          => $valDtl["PLUG_DTL_HDR_ID"],
+                                    "PLUG_DTL_CONT"            => $valDtl["PLUG_DTL_CONT"],
+                                    "PLUG_DTL_CONT_SIZE"       => $valDtl["PLUG_DTL_CONT_SIZE"],
+                                    "PLUG_DTL_CONT_STATUS"     => $valDtl["PLUG_DTL_CONT_STATUS"],
+                                    "PLUG_DTL_STATUS"          => $valDtl["PLUG_DTL_STATUS"],
+                                    "PLUG_DTL_CANCELLED"       => $valDtl["PLUG_DTL_CANCELLED"],
+                                    "PLUG_DTL_ACTIVE"          => $valDtl["PLUG_DTL_ACTIVE"],
+                                    "PLUG_DTL_START_PLUG_PLAN" => $valDtl["PLUG_DTL_START_PLUG_PLAN"],
+                                    "PLUG_DTL_END_PLUG_PLAN"   => $valDtl["PLUG_DTL_END_PLUG_PLAN"],
+                                    "PLUG_DTL_COMMODITY"       => $valDtl["PLUG_DTL_COMMODITY"],
+                                    "PLUG_DTL_COUNTER"         => $valDtl["PLUG_DTL_COUNTER"]
+                                    ];
+        }
+
+
       } else {
-        $result["header"] = "Header Insert";
-      }
+        $queryHdrId               = $db->select("SEQ_TX_REQ_PLUG_HDR.NEXTVAL AS ID")->get('DUAL');
+        $hdrID                    = $queryHdrId->result_array();
+        $hederID                  = $hdrID[0]["ID"];
 
-      $head     = $repodb->set($header)->get_compiled_insert('TX_REQ_PLUG_HDR');
-      $this->reponpks->query($head);
+        $storeHeader              = [
+          "PLUG_ID"               => $hederID,
+          "PLUG_NO"               => $header["PLUG_NO"],
+          "PLUG_BRANCH_ID"        => $header["BRANCH_ID"],
+          "PLUG_CONSIGNEE_ID"     => $header["PLUG_CONSIGNEE_ID"],
+          "PLUG_CREATE_DATE"      => $header["PLUG_CREATE_DATE"],
+          "PLUG_CREATE_BY"        => $header["PLUG_CREATE_BY"],
+          "PLUG_STATUS"           => $header["PLUG_STATUS"]
+        ];
 
-      foreach ($detail as $detail) {
-        $det    = $db->set($detail)->get_compiled_insert('TX_REQ_PLUG_DTL');
-        $this->reponpks->query($det);
-      }
+        $head                     = $repodb->set($storeHeader)->get_compiled_insert('TX_REQ_PLUG_HDR');
+        $queryHdr                 = $this->reponpks->query($head);
 
-      // JSON Response
-      header('Content-Type: application/json');
-      if ($encode == "true") {
-        $out["result"] = base64_encode(json_encode($result));
-        echo json_encode($out);
-      } else {
-        echo json_encode($result);
-      }
+        $result["SUCCESS"]        = "true";
+        $result["MSG"]            = "Success";
+        $result["REQ_NO"]         = $header["PLUG_NO"];
+        $result["NM_CONSIGNEE"]   = $header["PLUG_CONSIGNEE_ID"];
+        $result["STATUS"]         = $header["PLUG_STATUS"];
+
+        foreach ($detail as $detail) {
+          $queryDtlId             = $db->select("SEQ_TX_REQ_PLUG_DTL.NEXTVAL AS ID")->get('DUAL');
+          $dtlID                  = $queryDtlId->result_array();
+
+          $storeDetail            = [
+            "PLUG_DTL_ID"              => $dtlID[0]["ID"],
+            "PLUG_DTL_HDR_ID"          => $hederID,
+            "PLUG_DTL_CONT"            => $detail["PLUG_DTL_CONT"],
+            "PLUG_DTL_CONT_SIZE"       => $detail["PLUG_DTL_CONT_SIZE"],
+            "PLUG_DTL_CONT_STATUS"     => $detail["PLUG_DTL_CONT_STATUS"],
+            "PLUG_DTL_STATUS"          => $detail["PLUG_DTL_STATUS"],
+            "PLUG_DTL_CANCELLED"       => $detail["PLUG_DTL_CANCELLED"],
+            "PLUG_DTL_ACTIVE"          => $detail["PLUG_DTL_ACTIVE"],
+            "PLUG_DTL_START_PLUG_PLAN" => $detail["PLUG_DTL_START_PLUG_PLAN"],
+            "PLUG_DTL_END_PLUG_PLAN"   => $detail["PLUG_DTL_END_PLUG_PLAN"],
+            "PLUG_DTL_COMMODITY"       => $detail["PLUG_DTL_COMMODITY"],
+            "PLUG_DTL_COUNTER"         => $detail["PLUG_DTL_COUNTER"]
+          ];
+
+          $det                    = $db->set($storeDetail)->get_compiled_insert('TX_REQ_PLUG_DTL');
+          $queryDtl               = $this->reponpks->query($det);
+          $result["DETAIL"][]     = $storeDetail;
+          }
+        }
+
+        if ($encode == "true") {
+          $out["result"] = base64_encode(json_encode($result));
+          echo json_encode($result);
+        } else {
+          echo json_encode($result);
+        }
     }
 
-    //Waiting
     function getFumigasi_post($input, $branch,$encode) {
-      $db       = $this->db;
-      $repodb   = $this->reponpks;
-      $header   = $input["header"];
-      $detail   = $input["arrdetail"];
+      $db                         = $this->db;
+      $repodb                     = $this->reponpks;
+      $header                     = $input["header"];
+      $detail                     = $input["arrdetail"];
 
-      $query    = $repodb->where('FUMI_ID', $header["FUMI_ID"])->where("FUMI_ID", $header["FUMI_ID"])->get('TX_REQ_FUMI_HDR');
-      $result   = $query->result();
+      $query                      = $repodb->where("FUMI_ID", $header["FUMI_ID"])->get('TX_REQ_FUMI_HDR');
+      $resultQuery                = $query->result_array();
 
-      if (!empty($result)) {
-        $result["header"] = "Header Exist Ada";
+      if (!empty($resultQuery)) {
+        $result["SUCCESS"]        = "false";
+        $result["MSG"]            = "Already Exist";
+        $result["REQ_NO"]         = $header["FUMI_NO"];
+        $result["NM_CONSIGNEE"]   = $header["FUMI_CONSIGNEE_ID"];
+        $result["STATUS"]         = $header["FUMI_STATUS"];
+
+        $queryDTL                 = $repodb->where("FUMI_DTL_HDR_ID", $header["FUMI_ID"])->get('TX_REQ_FUMI_DTL');
+        $resultDTLQuery           = $queryDTL->result_array();
+
+        foreach ($resultDTLQuery as $valDtl) {
+          $result["DETAIL"][]     = [
+                                    "FUMI_DTL_ID"              =>$valDtl["FUMI_DTL_ID"],
+                                    "FUMI_DTL_HDR_ID"          =>$valDtl["FUMI_DTL_HDR_ID"],
+                                    "FUMI_DTL_CONT"            =>$valDtl["FUMI_DTL_CONT"],
+                                    "FUMI_DTL_CONT_SIZE"       =>$valDtl["FUMI_DTL_CONT_SIZE"],
+                                    "FUMI_DTL_CONT_STATUS"     =>$valDtl["FUMI_DTL_CONT_STATUS"],
+                                    "FUMI_DTL_STATUS"          =>$valDtl["FUMI_DTL_STATUS"],
+                                    "FUMI_DTL_CANCELLED"       =>$valDtl["FUMI_DTL_CANCELLED"],
+                                    "FUMI_DTL_ACTIVE"          =>$valDtl["FUMI_DTL_ACTIVE"],
+                                    "FUMI_DTL_START_FUMI_PLAN" =>$valDtl["FUMI_DTL_START_FUMI_PLAN"],
+                                    "FUMI_DTL_END_FUMI_PLAN"   =>$valDtl["FUMI_DTL_END_FUMI_PLAN"],
+                                    "FUMI_DTL_COMMODITY"       =>$valDtl["FUMI_DTL_COMMODITY"],
+                                    "FUMI_DTL_COUNTER"         =>$valDtl["FUMI_DTL_COUNTER"]
+                                    ];
+        }
+
       } else {
-        $result["header"] = "Header Insert";
-      }
 
-      $head     = $repodb->set($header)->get_compiled_insert('TX_REQ_FUMI_HDR');
-      $this->reponpks->query($head);
+        $queryHdrId               = $db->select("SEQ_REQ_FUMI_HDR.NEXTVAL AS ID")->get('DUAL');
+        $hdrID                    = $queryHdrId->result_array();
+        $hederID                  = $hdrID[0]["ID"];
+        $storeHeader              = [
+          "FUMI_ID"               => $hederID,
+          "FUMI_NO"               => $header["FUMI_NO"],
+          "FUMI_BRANCH_ID"        => $header["BRANCH_ID"],
+          "FUMI_CONSIGNEE_ID"     => $header["FUMI_CONSIGNEE_ID"],
+          "FUMI_CREATE_DATE"      => $header["FUMI_CREATE_DATE"],
+          "FUMI_CREATE_BY"        => $header["FUMI_CREATE_BY"],
+          "FUMI_STATUS"           => $header["FUMI_STATUS"]
+        ];
 
-      foreach ($detail as $detail) {
-        $det    = $db->set($detail)->get_compiled_insert('TX_REQ_FUMI_DTL');
-        $this->reponpks->query($det);
+        $head                     = $repodb->set($storeHeader)->get_compiled_insert('TX_REQ_FUMI_HDR');
+        $queryHdr                 = $this->reponpks->query($head);
+
+        $result["SUCCESS"]        = "true";
+        $result["MSG"]            = "Success";
+        $result["REQ_NO"]         = $header["FUMI_NO"];
+        $result["NM_CONSIGNEE"]   = $header["FUMI_CONSIGNEE_ID"];
+        $result["STATUS"]         = $header["FUMI_STATUS"];
+
+        foreach ($detail as $detail) {
+          $queryDtlId             = $db->select("SEQ_REQ_FUMI_DTL.NEXTVAL AS ID")->get('DUAL');
+          $dtlID                  = $queryDtlId->result_array();
+
+          $storeDetail            = [
+            "FUMI_DTL_ID"              => $dtlID[0]["ID"],
+            "FUMI_DTL_HDR_ID"          => $hederID,
+            "FUMI_DTL_CONT"            => $detail["FUMI_DTL_CONT"],
+            "FUMI_DTL_CONT_SIZE"       => $detail["FUMI_DTL_CONT_SIZE"],
+            "FUMI_DTL_CONT_STATUS"     => $detail["FUMI_DTL_CONT_STATUS"],
+            "FUMI_DTL_STATUS"          => $detail["FUMI_DTL_STATUS"],
+            "FUMI_DTL_CANCELLED"       => $detail["FUMI_DTL_CANCELLED"],
+            "FUMI_DTL_ACTIVE"          => $detail["FUMI_DTL_ACTIVE"],
+            "FUMI_DTL_START_FUMI_PLAN" => $detail["FUMI_DTL_START_FUMI_PLAN"],
+            "FUMI_DTL_END_FUMI_PLAN"   => $detail["FUMI_DTL_END_FUMI_PLAN"],
+            "FUMI_DTL_COMMODITY"       => $detail["FUMI_DTL_COMMODITY"],
+            "FUMI_DTL_COUNTER"         => $detail["FUMI_DTL_COUNTER"]
+          ];
+
+          $det                    = $db->set($storeDetail)->get_compiled_insert('TX_REQ_FUMI_DTL');
+          $queryDtl               = $this->reponpks->query($det);
+          $result["DETAIL"][]     = $storeDetail;
+          }
       }
 
       // JSON Response
       header('Content-Type: application/json');
       if ($encode == "true") {
         $out["result"] = base64_encode(json_encode($result));
-        echo json_encode($out);
+        echo json_encode($result);
       } else {
         echo json_encode($result);
       }

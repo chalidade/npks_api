@@ -305,51 +305,19 @@ class View extends BD_Controller {
 
       foreach ($data as $data) {
         // Change Later
-        $sqlgetStrip = "
-                       SELECT * FROM
-                       (
-                         SELECT * FROM
-                         (
-                           SELECT MAX
-                              (C.REAL_YARD_YBC_ID) over () as MAX_ID,
-                              A.REAL_STRIP_ID,
-                              A.REAL_STRIP_CONT NO_CONT,
-                              A.REAL_STRIP_NOREQ NO_REQUEST,
-                              TO_CHAR(B.STRIP_CREATE_DATE,'MM/DD/YYYY HH24:MI:SS') AS TGL_REQUEST,
-                              A.REAL_STRIP_MECHANIC_TOOLS ALAT,
-                              TO_CHAR(A.REAL_STRIP_DATE,'MM/DD/YYYY HH24:MI:SS') AS TGL_REALISASI,A.REAL_STRIP_BY,
-                              C.REAL_YARD_YBC_ID YBC_ID,
-                              A.REAL_STRIP_MARK,
-                              A.REAL_STRIP_BACKDATE
-                           FROM
-                              TX_REAL_STRIP A
-                           INNER JOIN
-                              TX_REQ_STRIP_HDR B ON B.STRIP_ID = A.REAL_STRIP_HDR_ID
-                           INNER JOIN
-                              TX_REAL_YARD C ON C.REAL_YARD_CONT = A.REAL_STRIP_CONT AND C.REAL_YARD_STATUS = '1'
-                           WHERE
-                              A.REAL_STRIP_FL_SEND = 0
-                           AND
-                              A.REAL_STRIP_STATUS = 2
-                           AND
-                              A.REAl_STRIP_BRANCH_ID = '3'
-                          ORDER BY
-                              A.REAL_STRIP_DATE ASC
-                          ) Z
-                        WHERE
-                          Z.MAX_ID = Z.YBC_ID
-                      ) ZZ
-                      WHERE
-                        rownum <=1 ";
+        $sqlgetStrip                = $repodb->where("REAL_STRIP_CONT",$data["NO_CONTAINER"])
+                                             ->where("REAL_STRIP_NOREQ",$data["NO_REQUEST"])
+                                             ->where("REAL_STRIP_BRANCH_ID",$data["BRANCH_ID"])
+                                             ->order_by("REAL_STRIP_DATE", "ASC")
+                                             ->get("TX_REAL_STRIP");
 
-        $resultservices = $npksdb->query($sqlgetStrip);
-        $totalservice = $resultservices->result_array();
+        $totalservice               = $sqlgetStrip->result_array();
 
-        $data_view = json_encode($totalservice);
-        $data_use  = json_decode($data_view);
+        $data_view                  = json_encode($totalservice);
+        $data_use                   = json_decode($data_view);
 
         foreach ($data_use as $value) {
-          $newdt[] = $value;
+          $newdt[]  = $value;
         }
       }
 
