@@ -325,31 +325,6 @@ class Store extends BD_Controller {
         }
       }
 
-      $link        = oci_connect('NPKS_PLG_REPO', 'npksplgrepo', '10.88.48.34:1521/INVDB');
-      // Syn Header
-      $sqlHeader   = "
-                      DECLARE
-                      v_flag VARCHAR2(2);
-                      v_msg VARCHAR2(100);
-                      BEGIN PKG_SYNC_TABLE.P_TX_REQ_DELIVERY_HDR(v_flag,v_msg);
-                      end;
-                      ";
-
-      $stmtHeader       = oci_parse($link, $sqlHeader);
-      $queryHeader      = oci_execute($stmtHeader);
-
-      // Syn Detail
-      $sqlDetail   = "
-                      DECLARE
-                      v_flag VARCHAR2(2);
-                      v_msg VARCHAR2(100);
-                      BEGIN PKG_SYNC_TABLE.P_TX_REQ_DELIVERY_DTL(v_flag,v_msg);
-                      end;
-                      ";
-
-      $stmtDetail       = oci_parse($link, $sqlDetail);
-      $queryDetail      = oci_execute($stmtDetail);
-
       // JSON Response
       header('Content-Type: application/json');
       if ($encode == "true") {
@@ -692,32 +667,6 @@ class Store extends BD_Controller {
         }
       }
 
-      // Syncronize Database PlG - PLG_REPO
-      $link        = oci_connect('NPKS_PLG_REPO', 'npksplgrepo', '10.88.48.34:1521/INVDB');
-      // Syn Header
-      $sqlHeader   = "
-                     DECLARE
-                     v_flag VARCHAR2(2);
-                     v_msg VARCHAR2(100);
-                     BEGIN PKG_SYNC_TABLE.P_TX_REQ_STUFF_HDR(v_flag,v_msg);
-                     end;
-                     ";
-
-      $stmtHeader       = oci_parse($link,$sqlHeader);
-      $queryHeader      = oci_execute($stmtHeader);
-
-      // Syn Detail
-      $sqlDetail   = "
-                     DECLARE
-                     v_flag VARCHAR2(2);
-                     v_msg VARCHAR2(100);
-                     BEGIN pkg_sync_table.p_tx_req_stuff_dtl(v_flag,v_msg);
-                     end;
-                     ";
-
-      $stmtDetail       = oci_parse($link,$sqlDetail);
-      $queryDetail      = oci_execute($stmtDetail);
-
       // JSON Response
       header('Content-Type: application/json');
       if ($encode == "true") {
@@ -1057,32 +1006,6 @@ class Store extends BD_Controller {
             $a++;
         }
       }
-
-      // Syncronize Database PlG - PLG_REPO
-      $link        = oci_connect('NPKS_PLG_REPO', 'npksplgrepo', '10.88.48.34:1521/INVDB');
-      // Syn Header
-      $sqlHeader   = "
-                     DECLARE
-                     v_flag VARCHAR2(2);
-                     v_msg VARCHAR2(100);
-                     BEGIN PKG_SYNC_TABLE.P_TX_REQ_STRIP_HDR(v_flag,v_msg);
-                     end;
-                     ";
-
-      $stmtHeader       = oci_parse($link,$sqlHeader);
-      $queryHeader      = oci_execute($stmtHeader);
-
-      // Syn Detail
-      $sqlDetail   = "
-                     DECLARE
-                     v_flag VARCHAR2(2);
-                     v_msg VARCHAR2(100);
-                     BEGIN PKG_SYNC_TABLE.P_TX_REQ_STRIP_DTL(v_flag,v_msg);
-                     end;
-                     ";
-
-      $stmtDetail       = oci_parse($link,$sqlDetail);
-      $queryDetail      = oci_execute($stmtDetail);
 
       // JSON Response
       header('Content-Type: application/json');
@@ -1785,31 +1708,7 @@ class Store extends BD_Controller {
             }
           }
         }
-        // Syncronize Database PlG - PLG_REPO
-        $link        = oci_connect('NPKS_PLG_REPO', 'npksplgrepo', '10.88.48.34:1521/INVDB');
-        // Syn Header
-        $sqlHeader   = "
-        DECLARE
-        v_flag VARCHAR2(2);
-        v_msg VARCHAR2(100);
-        BEGIN PKG_SYNC_TABLE.P_TX_REQ_RECEIVING_HDR(v_flag,v_msg);
-        end;
-        ";
 
-        $stmtHeader       = oci_parse($link, $sqlHeader);
-        $queryHeader      = oci_execute($stmtHeader);
-
-        // Syn Detail
-        $sqlDetail   = "
-        DECLARE
-        v_flag VARCHAR2(2);
-        v_msg VARCHAR2(100);
-        BEGIN PKG_SYNC_TABLE.P_TX_REQ_RECEIVING_DTL(v_flag,v_msg);
-        end;
-        ";
-
-        $stmtDetail       = oci_parse($link, $sqlDetail);
-        $queryDetail      = oci_execute($stmtDetail);
         // JSON Response
         header('Content-Type: application/json');
         echo json_encode($result);
