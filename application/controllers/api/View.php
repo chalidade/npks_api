@@ -287,6 +287,87 @@ class View extends BD_Controller {
       }
     }
 
+    function generateFumi_post($input, $branch, $encode) {
+      // Initialization
+      header('Content-Type: application/json');
+      $this->auth_basic();
+      $devdb                        = $this->db;
+      $repodb                       = $this->reponpks;
+      $npksdb                       = $this->npks;
+      $branch                       = 3;
+      $data                         = $input["data"];
+
+      $newdt                        = [];
+
+      foreach ($data as $data) {
+        // Change Later
+        $sqlfumi                    = $repodb->where("REAL_FUMI_CONT",$data["NO_CONTAINER"])
+                                             ->where("REAL_FUMI_NOREQ",$data["NO_REQUEST"])
+                                             ->where("REAL_FUMI_BRANCH_ID",$data["BRANCH_ID"])
+                                             ->where("REAL_FUMI_STATUS","2")
+                                             ->order_by("REAL_FUMI_DATE", "ASC")
+                                             ->get("TX_REAL_FUMI");
+
+        $resultservices             = $sqlfumi->result_array();
+        $data_view                  = json_encode($resultservices);
+        $data_use                   = json_decode($data_view);
+
+        foreach ($data_use as $value) {
+          $newdt[] = $value;
+        }
+      }
+
+      $out["count"]   = count($newdt);
+      $out["result"]  = $newdt;
+
+      if ($encode == "true") {
+        $result["result"] = base64_encode(json_encode($out));
+        echo json_encode($result);
+      } else {
+        echo json_encode($out);
+      }
+    }
+
+    function generatePlug_post($input, $branch, $encode) {
+      // Initialization
+      header('Content-Type: application/json');
+      $this->auth_basic();
+      $devdb                        = $this->db;
+      $repodb                       = $this->reponpks;
+      $npksdb                       = $this->npks;
+      $branch                       = 3;
+      $data                         = $input["data"];
+
+      $newdt                        = [];
+
+      foreach ($data as $data) {
+        // Change Later
+        $sqlfumi                    = $repodb->where("REAL_PLUG_CONT",$data["NO_CONTAINER"])
+                                             ->where("REAL_PLUG_NOREQ",$data["NO_REQUEST"])
+                                             ->where("REAL_PLUG_BRANCH_ID",$data["BRANCH_ID"])
+                                             ->order_by("REAL_PLUG_DATE", "ASC")
+                                             ->get("TX_REAL_PLUG");
+
+        $resultservices             = $sqlfumi->result_array();
+        $data_view                  = json_encode($resultservices);
+        $data_use                   = json_decode($data_view);
+
+        foreach ($data_use as $value) {
+          $newdt[] = $value;
+        }
+      }
+
+      $out["count"]   = count($newdt);
+      $out["result"]  = $newdt;
+
+      if ($encode == "true") {
+        $result["result"] = base64_encode(json_encode($out));
+        echo json_encode($result);
+      } else {
+        echo json_encode($out);
+      }
+    }
+
     function generateGateInCargo_post($input, $branch, $encode) {
       echo "GateInCargo";
     }
