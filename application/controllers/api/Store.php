@@ -173,7 +173,8 @@ class Store extends BD_Controller {
             REQ_DELIVERY_DATE,
             REQUEST_NOTA_DATE,
             REQUEST_PAID_DATE,
-            REQUEST_TO, REQUEST_STATUS,
+            REQUEST_TO,
+            REQUEST_STATUS,
             REQUEST_EXTEND_FROM,
             REQUEST_EXTEND_LOOP,
             REQUEST_ALIH_KAPAL
@@ -189,7 +190,8 @@ class Store extends BD_Controller {
             TO_DATE('" . $TGL_NOTA . "','MM/DD/YYYY HH24:MI:SS'),
             TO_DATE('" . $TANGGAL_LUNAS . "','MM/DD/YYYY HH24:MI:SS'),
             '" . $DELIVERY_KE . "',
-            '1','" . $PERP_DARI . "',
+            '1',
+            '" . $PERP_DARI . "',
             " . $PERP_KE . ",
             'Y'
           )";
