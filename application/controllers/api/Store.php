@@ -1254,8 +1254,7 @@ class Store extends BD_Controller {
       } else {
         $queryHdrId               = $db->select("SEQ_REQ_REC_BRG_HDR.NEXTVAL AS ID")->get('DUAL');
         $hdrID                    = $queryHdrId->result_array();
-        // $hederID                  = $hdrID[0]["ID"];
-        $hederID                  = 3;
+        $hederID                  = $hdrID[0]["ID"];
 
         $storeHeader              = [
           "REQUEST_ID"            => $hederID,
@@ -1326,8 +1325,123 @@ class Store extends BD_Controller {
     }
 
     function getDeliveryBrg_post($input,$branch, $encode) {
-      echo "Berhasil";
-    }
+      $db                         = $this->db;
+      $repodb                     = $this->reponpks;
+      $header                     = $input["header"];
+      $detail                     = $input["arrdetail"];
+
+      $query                      = $repodb->where("REQUEST_ID", $header["REQUEST_ID"])->get('TX_REQ_DELIVERY_BRG_HDR');
+      $resultQuery                = $query->result_array();
+
+      // echo json_encode($resultQuery);
+
+      if (!empty($resultQuery)) {
+        $result["SUCCESS"]        = "false";
+        $result["MSG"]            = "Already Exist";
+        $result["REQ_NO"]         = $resultQuery[0]["REQUEST_NO"];
+        $result["NM_CONSIGNEE"]   = $resultQuery[0]["REQUEST_CONSIGNEE_ID"];
+        $result["STATUS"]         = $resultQuery[0]["REQUEST_STATUS"];
+
+
+        $queryDTL                 = $repodb->where("REQUEST_HDR_ID", $resultQuery[0]["REQUEST_ID"])->get('TX_REQ_DELIVERY_BRG_DTL');
+        $resultDTLQuery           = $queryDTL->result_array();
+
+        foreach ($resultDTLQuery as $valDtl) {
+          $result["DETAIL"][]     = [
+                                    "REQUEST_DTL_ID"            => $valDtl["REQUEST_DTL_ID"],
+                                    "REQUEST_HDR_ID"            => $valDtl["REQUEST_HDR_ID"],
+                                    "REQUEST_DTL_SI"            => $valDtl["REQUEST_DTL_SI"],
+                                    "REQUEST_DTL_COMMODITY"     => $valDtl["REQUEST_DTL_COMMODITY"],
+                                    "REQUEST_DTL_DANGER"        => $valDtl["REQUEST_DTL_DANGER"],
+                                    "REQUEST_DTL_VOY"           => $valDtl["REQUEST_DTL_VOY"],
+                                    "REQUEST_DTL_VESSEL_NAME"   => $valDtl["REQUEST_DTL_VESSEL_NAME"],
+                                    "REQUEST_DTL__VESSEL_CODE"  => $valDtl["REQUEST_DTL__VESSEL_CODE"],
+                                    "REQUEST_DTL_CALL_SIGN"     => $valDtl["REQUEST_DTL_CALL_SIGN"],
+                                    "REQUEST_DTL_DEST_DEPO"     => $valDtl["REQUEST_DTL_DEST_DEPO"],
+                                    "REQUEST_DTL_STATUS"        => $valDtl["REQUEST_DTL_STATUS"],
+                                    "REQUEST_DTL_OWNER_CODE"    => $valDtl["REQUEST_DTL_OWNER_CODE"],
+                                    "REQUEST_DTL_OWNER_NAME"    => $valDtl["REQUEST_DTL_OWNER_NAME"],
+                                    "REQUEST_DTL_TOTAL"         => $valDtl["REQUEST_DTL_TOTAL"],
+                                    "REQUEST_DTL_UNIT"          => $valDtl["REQUEST_DTL_UNIT"]
+                                    ];
+        }
+
+
+      } else {
+        $queryHdrId               = $db->select("SEQ_TX_REQ_DELIVERY_BRG_HDR.NEXTVAL AS ID")->get('DUAL');
+        $hdrID                    = $queryHdrId->result_array();
+        $hederID                  = $hdrID[0]["ID"];
+
+
+        $storeHeader              = [
+          "REQUEST_ID"            => $hederID,
+          "REQUEST_NO"            => $header["REQUEST_NO"],
+          "REQUEST_CONSIGNEE_ID"  => $header["REQUEST_CONSIGNEE_ID"],
+          "REQUEST_MARK"          => $header["REQUEST_MARK"],
+          "REQUEST_CREATE_DATE"   => $header["REQUEST_CREATE_DATE"],
+          "REQUEST_CREATE_BY"     => $header["REQUEST_CREATE_BY"],
+          "REQUEST_NOTA"          => $header["REQUEST_NOTA"],
+          "REQUEST_NO_TPK"        => $header["REQUEST_NO_TPK"],
+          "REQUEST_DO_NO"         => $header["REQUEST_DO_NO"],
+          "REQUEST_BL_NO"         => $header["REQUEST_BL_NO"],
+          "REQUEST_SPPB_NO"       => $header["REQUEST_SPPB_NO"],
+          "REQUEST_SPPB_DATE"     => $header["REQUEST_SPPB_DATE"],
+          "REQUEST_DATE"          => $header["REQUEST_DATE"],
+          "REQUEST_NOTA_DATE"     => $header["REQUEST_NOTA_DATE"],
+          "REQUEST_PAID_DATE"     => $header["REQUEST_PAID_DATE"],
+          "REQUEST_FROM"          => $header["REQUEST_FROM"],
+          "REQUEST_STATUS"        => $header["REQUEST_STATUS"],
+          "REQUEST_DI"            => $header["REQUEST_DI"],
+          "REQUEST_BRANCH_ID"     => $header["BRANCH_ID"]
+        ];
+
+
+        $head                     = $repodb->set($storeHeader)->get_compiled_insert('TX_REQ_DELIVERY_BRG_HDR');
+        $queryHdr                 = $repodb->query($head);
+
+        $result["SUCCESS"]        = "true";
+        $result["MSG"]            = "Success";
+        $result["REQ_NO"]         = $header["REQUEST_NO"];
+        $result["NM_CONSIGNEE"]   = $header["REQUEST_CONSIGNEE_ID"];
+        $result["STATUS"]         = $header["REQUEST_STATUS"];
+
+        // echo json_encode($result);
+
+        foreach ($detail as $detail) {
+          $queryDtlId             = $db->select("SEQ_TX_REQ_DELIVERY_BRG_DTL.NEXTVAL AS ID")->get('DUAL');
+          $dtlID                  = $queryDtlId->result_array();
+
+          $storeDetail            = [
+            "REQUEST_DTL_ID"           => $dtlID[0]["ID"],
+            "REQUEST_HDR_ID"           => $hederID,
+            "REQUEST_DTL_SI"           => $detail["REQUEST_DTL_SI"],
+            "REQUEST_DTL_COMMODITY"    => $detail["REQUEST_DTL_COMMODITY"],
+            "REQUEST_DTL_DANGER"       => $detail["REQUEST_DTL_DANGER"],
+            "REQUEST_DTL_VOY"          => $detail["REQUEST_DTL_VOY"],
+            "REQUEST_DTL_VESSEL_NAME"  => $detail["REQUEST_DTL_VESSEL_NAME"],
+            "REQUEST_DTL__VESSEL_CODE" => $detail["REQUEST_DTL__VESSEL_CODE"],
+            "REQUEST_DTL_CALL_SIGN"    => $detail["REQUEST_DTL_CALL_SIGN"],
+            "REQUEST_DTL_DEST_DEPO"    => $detail["REQUEST_DTL_DEST_DEPO"],
+            "REQUEST_DTL_STATUS"       => $detail["REQUEST_DTL_STATUS"],
+            "REQUEST_DTL_OWNER_CODE"   => $detail["REQUEST_DTL_OWNER_CODE"],
+            "REQUEST_DTL_OWNER_NAME"   => $detail["REQUEST_DTL_OWNER_NAME"],
+            "REQUEST_DTL_TOTAL"        => $detail["REQUEST_DTL_TOTAL"],
+            "REQUEST_DTL_UNIT"         => $detail["REQUEST_DTL_UNIT"]
+          ];
+
+          $det                    = $db->set($storeDetail)->get_compiled_insert('TX_REQ_DELIVERY_BRG_DTL');
+          $queryDtl               = $this->reponpks->query($det);
+          $result["DETAIL"][]     = $storeDetail;
+          }
+        }
+
+        if ($encode == "true") {
+          $out["result"] = base64_encode(json_encode($result));
+          echo json_encode($result);
+        } else {
+          echo json_encode($result);
+        }
+      }
 
     // Done
     function getReceiving_post($input, $branch, $encode) {
