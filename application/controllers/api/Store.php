@@ -519,6 +519,7 @@ class Store extends BD_Controller {
             $REQ_DTL_REMARK_SP2           = trim($detailroot['REQ_DTL_REMARK_SP2']);
             $REQ_DTL_ORIGIN               = trim($detailroot['REQ_DTL_ORIGIN']);
             $STUFF_DTL_START_STUFF_PLAN   = trim($detailroot['TGL_MULAI']);
+            $STUFF_DTL_VIA                = trim($detailroot['REQ_DTL_VIA']);
             $STUFF_DTL_END_STUFF_PLAN     = trim($detailroot['TGL_SELESAI']);
 
             // Cek Detail Exist Or No
@@ -571,7 +572,8 @@ class Store extends BD_Controller {
                                               STUFF_DTL_REMARK_SP2,
                                               STUFF_DTL_ORIGIN,STUFF_DTL_START_STUFF_PLAN,STUFF_DTL_END_STUFF_PLAN,
                                               STUFF_DTL_CONT_STATUS,
-                                              STUFF_DTL_COUNTER
+                                              STUFF_DTL_COUNTER,
+                                              STUFF_DTL_VIA
                                             )
                                             VALUES
                                             (
@@ -585,7 +587,8 @@ class Store extends BD_Controller {
                                                '".$REQ_DTL_ORIGIN."',
                                                TO_DATE('".$STUFF_DTL_START_STUFF_PLAN."','MM/DD/YYYY HH24:MI:SS'),
                                                TO_DATE('".$STUFF_DTL_END_STUFF_PLAN."','MM/DD/YYYY HH24:MI:SS'),
-                                               'MTY', ".$cont_count."
+                                               'MTY', ".$cont_count.",
+                                               '".$STUFF_DTL_VIA."'
                                             )";
 
               $resultDtl                   = $repodb->query($insertDTL);
@@ -600,7 +603,8 @@ class Store extends BD_Controller {
                   "REQ_DTL_REMARK_SP2"         => $REQ_DTL_REMARK_SP2,
                   "REQ_DTL_ORIGIN"             => $REQ_DTL_ORIGIN,
                   "STUFF_DTL_START_STUFF_PLAN" => $STUFF_DTL_START_STUFF_PLAN,
-                  "STUFF_DTL_END_STUFF_PLAN"   => $STUFF_DTL_END_STUFF_PLAN
+                  "STUFF_DTL_END_STUFF_PLAN"   => $STUFF_DTL_END_STUFF_PLAN,
+                  "STUFF_DTL_VIA"              => $STUFF_DTL_VIA
                 ];
 
               if($PERP_DARI !="") {
@@ -1108,7 +1112,7 @@ class Store extends BD_Controller {
 
         if ($encode == "true") {
           $out["result"] = base64_encode(json_encode($result));
-          echo json_encode($result);
+          echo json_encode($out);
         } else {
           echo json_encode($result);
         }
@@ -1203,7 +1207,7 @@ class Store extends BD_Controller {
       header('Content-Type: application/json');
       if ($encode == "true") {
         $out["result"] = base64_encode(json_encode($result));
-        echo json_encode($result);
+        echo json_encode($out);
       } else {
         echo json_encode($result);
       }
@@ -1215,7 +1219,7 @@ class Store extends BD_Controller {
       $header                     = $input["header"];
       $detail                     = $input["arrdetail"];
 
-      $query                      = $repodb->where("REQUEST_ID", $header["REQUEST_ID"])->get('TX_REQ_RECEIVING_BRG_HDR');
+      $query                      = $repodb->where("REQUEST_NO", $header["REQUEST_NO"])->get('TX_REQ_RECEIVING_BRG_HDR');
       $resultQuery                = $query->result_array();
 
       // echo json_encode($resultQuery[0]["REQUEST_NO"]);
@@ -1318,7 +1322,7 @@ class Store extends BD_Controller {
       // JSON Response
       if ($encode == "true") {
         $out["result"] = base64_encode(json_encode($result));
-        echo json_encode($result);
+        echo json_encode($out);
       } else {
         echo json_encode($result);
       }
@@ -1330,7 +1334,7 @@ class Store extends BD_Controller {
       $header                     = $input["header"];
       $detail                     = $input["arrdetail"];
 
-      $query                      = $repodb->where("REQUEST_ID", $header["REQUEST_ID"])->get('TX_REQ_DELIVERY_BRG_HDR');
+      $query                      = $repodb->where("REQUEST_NO", $header["REQUEST_NO"])->get('TX_REQ_DELIVERY_BRG_HDR');
       $resultQuery                = $query->result_array();
 
       // echo json_encode($resultQuery);
@@ -1437,7 +1441,7 @@ class Store extends BD_Controller {
 
         if ($encode == "true") {
           $out["result"] = base64_encode(json_encode($result));
-          echo json_encode($result);
+          echo json_encode($out);
         } else {
           echo json_encode($result);
         }
