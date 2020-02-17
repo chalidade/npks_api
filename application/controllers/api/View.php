@@ -434,7 +434,7 @@ class View extends BD_Controller {
           $newDt  = [];
           foreach ($value as $key => $value) {
             $newDt[$key] = $value;
-            $newDt["STATUS"] = "fcl";
+            $newDt["STATUS"] = "mty";
           }
         }
 
