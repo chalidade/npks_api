@@ -216,7 +216,7 @@ class View extends BD_Controller {
       $branch                       = 3;
       $data                         = $input["data"];
 
-      $newdt                        = [];
+      $all                          = [];
 
       foreach ($data as $data) {
         // Change Later
@@ -224,6 +224,7 @@ class View extends BD_Controller {
                                              ->where("REAL_STUFF_NOREQ",$data["NO_REQUEST"])
                                              ->where("REAL_STUFF_BRANCH_ID",$data["BRANCH_ID"])
                                              ->where('REAL_STUFF_STATUS', '1')
+                                             ->select('TX_REAL_STUFF.*, REAL_STUFF_CONT as NO_CONTAINER, REAL_STUFF_NOREQ as NO_REQUEST')
                                              ->order_by("REAL_STUFF_DATE", "ASC")
                                              ->get("TX_REAL_STUFF");
 
@@ -233,12 +234,18 @@ class View extends BD_Controller {
         $data_use  = json_decode($data_view);
 
         foreach ($data_use as $value) {
-          $newdt[] = $value;
+          $newDt  = [];
+          foreach ($value as $key => $value) {
+            $newDt[$key] = $value;
+            $newDt["STATUS"] = "fcl";
+          }
         }
+
+        $all[] = $newDt;
       }
 
-      $out["count"]   = count($newdt);
-      $out["result"]  = $newdt;
+      $out["count"]      = count($all);
+      $out["result"]     = $all;
 
       if ($encode == "true") {
         $result["result"] = base64_encode(json_encode($out));
@@ -306,6 +313,7 @@ class View extends BD_Controller {
                                              ->where("REAL_FUMI_NOREQ",$data["NO_REQUEST"])
                                              ->where("REAL_FUMI_BRANCH_ID",$data["BRANCH_ID"])
                                              ->where("REAL_FUMI_STATUS","2")
+                                             ->select("TX_REAL_FUMI.*, REAL_FUMI_CONT as NO_CONTAINER, REAL_FUMI_NOREQ as NO_REQUEST")
                                              ->order_by("REAL_FUMI_DATE", "ASC")
                                              ->get("TX_REAL_FUMI");
 
@@ -329,7 +337,7 @@ class View extends BD_Controller {
       }
     }
 
-    function generatePlugStart_post($input, $branch, $encode) {
+    function generatePlug_post($input, $branch, $encode) {
       // Initialization
       header('Content-Type: application/json');
       $this->auth_basic();
@@ -339,69 +347,50 @@ class View extends BD_Controller {
       $branch                       = 3;
       $data                         = $input["data"];
 
-      $newdt                        = [];
+      $newDt                        = [];
 
-      foreach ($data as $data) {
+
+      foreach ($data as $dataStart) {
         // Change Later
-        $sqlfumi                    = $repodb->where("REAL_PLUG_CONT",$data["NO_CONTAINER"])
-                                             ->where("REAL_PLUG_NOREQ",$data["NO_REQUEST"])
-                                             ->where("REAL_PLUG_BRANCH_ID",$data["BRANCH_ID"])
+        $sqlfumiStart                = $repodb->where("REAL_PLUG_CONT",$dataStart["NO_CONTAINER"])
+                                             ->where("REAL_PLUG_NOREQ",$dataStart["NO_REQUEST"])
+                                             ->where("REAL_PLUG_BRANCH_ID",$dataStart["BRANCH_ID"])
                                              ->where("REAL_PLUG_STATUS",1)
+                                             ->select("TX_REAL_PLUG.*, REAL_PLUG_NOREQ as NO_REQUEST,REAL_PLUG_CONT as NO_CONTAINER,REAL_PLUG_STATUS,REAL_PLUG_DATE,REAL_PLUG_BRANCH_ID")
                                              ->order_by("REAL_PLUG_DATE", "ASC")
                                              ->get("TX_REAL_PLUG");
 
-        $resultservices             = $sqlfumi->result_array();
-        $data_view                  = json_encode($resultservices);
-        $data_use                   = json_decode($data_view);
+        $resultservicesStart        = $sqlfumiStart->result_array();
+        $dataViewStart              = json_encode($resultservicesStart);
+        $dataUseStart               = json_decode($dataViewStart);
 
-        foreach ($data_use as $value) {
-          $newdt[] = $value;
+        foreach ($dataUseStart as $valueStart) {
+          $newDt[] = $valueStart;
         }
       }
 
-      $out["count"]   = count($newdt);
-      $out["result"]  = $newdt;
-
-      if ($encode == "true") {
-        $result["result"] = base64_encode(json_encode($out));
-        echo json_encode($result);
-      } else {
-        echo json_encode($out);
-      }
-    }
-
-    function generatePlugEnd_post($input, $branch, $encode) {
-      // Initialization
-      header('Content-Type: application/json');
-      $this->auth_basic();
-      $devdb                        = $this->db;
-      $repodb                       = $this->reponpks;
-      $npksdb                       = $this->npks;
-      $branch                       = 3;
-      $data                         = $input["data"];
-
-      $newdt                        = [];
-
-      foreach ($data as $data) {
+      foreach ($data as $dataFinish) {
         // Change Later
-        $sqlfumi                    = $repodb->where("REAL_PLUG_CONT",$data["NO_CONTAINER"])
-                                             ->where("REAL_PLUG_NOREQ",$data["NO_REQUEST"])
-                                             ->where("REAL_PLUG_BRANCH_ID",$data["BRANCH_ID"])
+        $sqlfumiFinish                = $repodb->where("REAL_PLUG_CONT",$dataFinish["NO_CONTAINER"])
+                                             ->where("REAL_PLUG_NOREQ",$dataFinish["NO_REQUEST"])
+                                             ->where("REAL_PLUG_BRANCH_ID",$dataFinish["BRANCH_ID"])
                                              ->where("REAL_PLUG_STATUS",2)
+                                             ->select("REAL_PLUG_NOREQ as NO_REQUEST,REAL_PLUG_CONT as NO_CONTAINER,REAL_PLUG_STATUS,REAL_PLUG_DATE,REAL_PLUG_BRANCH_ID")
                                              ->order_by("REAL_PLUG_DATE", "ASC")
                                              ->get("TX_REAL_PLUG");
 
-        $resultservices             = $sqlfumi->result_array();
-        $data_view                  = json_encode($resultservices);
-        $data_use                   = json_decode($data_view);
+        $resultservicesFinish        = $sqlfumiFinish->result_array();
+        $dataViewFinish              = json_encode($resultservicesFinish);
+        $dataUseFinish               = json_decode($dataViewFinish);
 
-        foreach ($data_use as $value) {
-          $newdt[] = $value;
+        foreach ($dataUseFinish as $valueFinish) {
+          $newDt[] = $valueFinish;
         }
       }
 
-      $out["count"]   = count($newdt);
-      $out["result"]  = $newdt;
+      $out["count"]   = count($newDt);
+      $out["result"]  = $newDt;
+
 
       if ($encode == "true") {
         $result["result"] = base64_encode(json_encode($out));
@@ -425,13 +414,14 @@ class View extends BD_Controller {
       $branch                       = 3;
       $data                         = $input["data"];
 
-      $newdt                        = [];
+      $all                          = [];
 
       foreach ($data as $data) {
         // Change Later
         $sqlgetStrip                = $repodb->where("REAL_STRIP_CONT",$data["NO_CONTAINER"])
                                              ->where("REAL_STRIP_NOREQ",$data["NO_REQUEST"])
                                              ->where("REAL_STRIP_BRANCH_ID",$data["BRANCH_ID"])
+                                             ->select("TX_REAL_STRIP.*, REAL_STRIP_CONT as NO_CONTAINER, REAL_STRIP_NOREQ as NO_REQUEST")
                                              ->order_by("REAL_STRIP_DATE", "ASC")
                                              ->get("TX_REAL_STRIP");
 
@@ -441,12 +431,18 @@ class View extends BD_Controller {
         $data_use                   = json_decode($data_view);
 
         foreach ($data_use as $value) {
-          $newdt[]  = $value;
+          $newDt  = [];
+          foreach ($value as $key => $value) {
+            $newDt[$key] = $value;
+            $newDt["STATUS"] = "fcl";
+          }
         }
+
+        $all[] = $newDt;
       }
 
-      $out["count"]   = count($newdt);
-      $out["result"]  = $newdt;
+      $out["count"]   = count($all);
+      $out["result"]  = $all;
 
       if ($encode == "true") {
         $result["result"] = base64_encode(json_encode($out));
