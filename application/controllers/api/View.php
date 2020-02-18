@@ -151,6 +151,58 @@ class View extends BD_Controller {
       }
     }
 
+    // function generateGetInBrg_post($input, $branch, $encode) {
+    //   // Initialization
+    //   header('Content-Type: application/json');
+    //   $this->auth_basic();
+    //   $devdb                        = $this->db;
+    //   $repodb                       = $this->reponpks;
+    //   $branch                       = 3;
+    //   $data                         = $input["data"];
+    //
+    //   $newdt                        = [];
+    //
+    //   foreach ($data as $data) {
+    //     $sqlgetIn                     = $repodb->select("
+    //                                                     GATE_ID,
+    //                                                     GATE_CONT AS NO_CONTAINER,
+    //                                                     GATE_NOREQ AS NO_REQUEST,
+    //                                                     GATE_TRUCK_NO AS NOPOL,
+    //                                                     GATE_CREATE_BY AS ID_USER,
+    //                                                     GATE_BRANCH_ID AS BRANCH_ID,
+    //                                                     TO_CHAR(GATE_CREATE_DATE,'MM/DD/YYYY HH24:MI:SS') AS TGL_IN,
+    //                                                     GATE_CONT_STATUS AS STATUS,
+    //                                                     GATE_ORIGIN
+    //                                                     ")
+    //                                            ->where("GATE_ACTIVITY","3")
+    //                                            ->where("GATE_STATUS","1")
+    //                                            ->where("GATE_CONT",$data["NO_CONTAINER"])
+    //                                            ->where("GATE_NOREQ",$data["NO_REQUEST"])
+    //                                            ->where("GATE_BRANCH_ID",$data["BRANCH_ID"])
+    //                                            ->order_by("GATE_CREATE_DATE", "ASC")
+    //                                            ->get('TX_GATE_BRG');
+    //     $resultservices               = $sqlgetIn->result_array();
+    //
+    //     $data_view = json_encode($resultservices);
+    //     $data_use  = json_decode($data_view);
+    //
+    //     foreach ($data_use as $value) {
+    //       $newdt[] = $value;
+    //     }
+    //   }
+
+
+      $out["count"]   = count($newdt);
+      $out["result"]  = $newdt;
+
+      if ($encode == "true") {
+        $result["result"] = base64_encode(json_encode($out));
+        echo json_encode($result);
+      } else {
+        echo json_encode($out);
+      }
+    }
+
     function generateGetOut_post($input, $branch, $encode) {
       // Initialization
       header('Content-Type: application/json');
