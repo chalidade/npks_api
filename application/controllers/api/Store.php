@@ -1124,7 +1124,7 @@ class Store extends BD_Controller {
       $header                     = $input["header"];
       $detail                     = $input["arrdetail"];
 
-      $query                      = $repodb->where("FUMI_ID", $header["FUMI_ID"])->get('TX_REQ_FUMI_HDR');
+      $query                      = $repodb->where("FUMI_NO", $header["FUMI_NO"])->get('TX_REQ_FUMI_HDR');
       $resultQuery                = $query->result_array();
 
       if (!empty($resultQuery)) {
@@ -1132,9 +1132,8 @@ class Store extends BD_Controller {
         $result["MSG"]            = "Already Exist";
         $result["REQ_NO"]         = $header["FUMI_NO"];
         $result["NM_CONSIGNEE"]   = $header["FUMI_CONSIGNEE_ID"];
-        $result["STATUS"]         = $header["FUMI_STATUS"];
 
-        $queryDTL                 = $repodb->where("FUMI_DTL_HDR_ID", $header["FUMI_ID"])->get('TX_REQ_FUMI_DTL');
+        $queryDTL                 = $repodb->where("FUMI_DTL_HDR_ID", $resultQuery[0]["FUMI_ID"])->get('TX_REQ_FUMI_DTL');
         $resultDTLQuery           = $queryDTL->result_array();
 
         foreach ($resultDTLQuery as $valDtl) {
@@ -1165,18 +1164,16 @@ class Store extends BD_Controller {
           "FUMI_BRANCH_ID"        => $header["BRANCH_ID"],
           "FUMI_CONSIGNEE_ID"     => $header["FUMI_CONSIGNEE_ID"],
           "FUMI_CREATE_DATE"      => $header["FUMI_CREATE_DATE"],
-          "FUMI_CREATE_BY"        => $header["FUMI_CREATE_BY"],
-          "FUMI_STATUS"           => $header["FUMI_STATUS"]
+          "FUMI_CREATE_BY"        => $header["FUMI_CREATE_BY"]
         ];
 
         $head                     = $repodb->set($storeHeader)->get_compiled_insert('TX_REQ_FUMI_HDR');
-        $queryHdr                 = $this->reponpks->query($head);
+        $queryHdr                 = $repodb->query($head);
 
         $result["SUCCESS"]        = "true";
         $result["MSG"]            = "Success";
         $result["REQ_NO"]         = $header["FUMI_NO"];
         $result["NM_CONSIGNEE"]   = $header["FUMI_CONSIGNEE_ID"];
-        $result["STATUS"]         = $header["FUMI_STATUS"];
 
         foreach ($detail as $detail) {
           $queryDtlId             = $db->select("SEQ_REQ_FUMI_DTL.NEXTVAL AS ID")->get('DUAL');
@@ -1197,14 +1194,13 @@ class Store extends BD_Controller {
             "FUMI_DTL_COUNTER"         => $detail["FUMI_DTL_COUNTER"]
           ];
 
-          $det                    = $db->set($storeDetail)->get_compiled_insert('TX_REQ_FUMI_DTL');
+          $det                    = $repodb->set($storeDetail)->get_compiled_insert('TX_REQ_FUMI_DTL');
           $queryDtl               = $this->reponpks->query($det);
           $result["DETAIL"][]     = $storeDetail;
           }
       }
 
       // JSON Response
-      header('Content-Type: application/json');
       if ($encode == "true") {
         $out["result"] = base64_encode(json_encode($result));
         echo json_encode($out);
