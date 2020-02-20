@@ -352,7 +352,8 @@ class View extends BD_Controller {
         $sqlPlacement            = $repodb->where("NO_CONTAINER",$data["NO_CONTAINER"])
                                           ->where("NO_REQUEST",$data["NO_REQUEST"])
                                           ->where("BRANCH_ID",$data["BRANCH_ID"])
-                                          ->order_by("TGL_PLACEMENT", "ASC")
+                                          ->limit(1)
+                                          ->order_by("YBC_SLOT", "ASC")
                                           ->get("TX_PLACEMENT");
 
         $resultservices       = $sqlPlacement->result_array();
