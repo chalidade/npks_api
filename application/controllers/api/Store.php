@@ -98,6 +98,7 @@ class Store extends BD_Controller {
     }
 
     function getDelivery_post($input, $branch, $encode) {
+
       $this->auth_basic();
       //header
       $header              = $input['header'];
@@ -560,9 +561,14 @@ class Store extends BD_Controller {
                   $cont_count = 1;
               }
 
+              $sqlIDTL = "SELECT SEQ_REQ_STUFF_DTL.NEXTVAL AS ID FROM DUAL";
+              $resultIDTL = $this->db->query($sqlIDTL)->result_array();
+              $IDdetail = $resultIDTL[0]['ID'];
+
               $insertDTL                  = "
                                             INSERT INTO TX_REQ_STUFF_DTL
                                             (
+                                              STUFF_DTL_ID,
                                               STUFF_DTL_HDR_ID,
                                               STUFF_DTL_CONT,
                                               STUFF_DTL_CONT_HAZARD,
@@ -577,6 +583,7 @@ class Store extends BD_Controller {
                                             )
                                             VALUES
                                             (
+                                              ".$IDdetail.",
                                               ".$IDheader.",
                                                '".$REQ_DTL_CONT."',
                                                '".$REQ_DTL_CONT_HAZARD."',

@@ -304,7 +304,7 @@ class View extends BD_Controller {
                                              ->where("REAL_STUFF_NOREQ",$data["NO_REQUEST"])
                                              ->where("REAL_STUFF_BRANCH_ID",$data["BRANCH_ID"])
                                              ->where('REAL_STUFF_STATUS', '1')
-                                             ->select('TX_REAL_STUFF.*, REAL_STUFF_CONT as NO_CONTAINER, REAL_STUFF_NOREQ as NO_REQUEST')
+                                             ->select("TX_REAL_STUFF.*, TO_CHAR(REAL_STUFF_DATE,'YYYY-MM-DD HH24:MI:SS') as REAL_STUFF, REAL_STUFF_CONT as NO_CONTAINER, REAL_STUFF_NOREQ as NO_REQUEST")
                                              ->order_by("REAL_STUFF_DATE", "ASC")
                                              ->get("TX_REAL_STUFF");
 
@@ -353,6 +353,7 @@ class View extends BD_Controller {
                                           ->where("NO_REQUEST",$data["NO_REQUEST"])
                                           ->where("BRANCH_ID",$data["BRANCH_ID"])
                                           ->limit(1)
+                                          ->select("TX_PLACEMENT.*, TO_CHAR(TGL_PLACEMENT,'YYYY-MM-DD HH24:MI:SS') as PLACEMENT_DATE")
                                           ->order_by("YBC_SLOT", "ASC")
                                           ->get("TX_PLACEMENT");
 
