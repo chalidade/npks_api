@@ -503,7 +503,7 @@ class View extends BD_Controller {
         $sqlgetStrip                = $repodb->where("REAL_STRIP_CONT",$data["NO_CONTAINER"])
                                              ->where("REAL_STRIP_NOREQ",$data["NO_REQUEST"])
                                              ->where("REAL_STRIP_BRANCH_ID",$data["BRANCH_ID"])
-                                             ->select("TX_REAL_STRIP.*, REAL_STRIP_CONT as NO_CONTAINER, REAL_STRIP_NOREQ as NO_REQUEST")
+                                             ->select("TX_REAL_STRIP.*,TO_CHAR(REAL_STRIP_DATE,'YYYY-MM-DD HH24:MI:SS') as REAL_STRIP, REAL_STRIP_CONT as NO_CONTAINER, REAL_STRIP_NOREQ as NO_REQUEST")
                                              ->order_by("REAL_STRIP_DATE", "ASC")
                                              ->get("TX_REAL_STRIP");
 

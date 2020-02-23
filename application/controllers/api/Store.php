@@ -898,9 +898,14 @@ class Store extends BD_Controller {
                   $cont_count          = 1;
               }
 
+              $sqlIDTL = "SELECT SEQ_TX_REQ_STRIP_DTL.NEXTVAL AS ID FROM DUAL";
+              $resultIDTL = $this->db->query($sqlIDTL)->result_array();
+              $IDdetail = $resultIDTL[0]['ID'];
+
               $insertDTL               = "
                                          INSERT INTO TX_REQ_STRIP_DTL
                                          (
+                                           STRIP_DTL_ID,
                                            STRIP_DTL_HDR_ID,
                                            STRIP_DTL_CONT,
                                            STRIP_DTL_DANGER,
@@ -914,6 +919,7 @@ class Store extends BD_Controller {
                                          )
                                          VALUES
                                          (
+                                           ".$IDdetail.",
                                            ".$IDheader.",
                                            '".$REQ_DTL_CONT."',
                                            '".$REQ_DTL_CONT_HAZARD."',
