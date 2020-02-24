@@ -338,6 +338,13 @@ class Store extends BD_Controller {
       }
     }
 
+    function getRecStuffing_post($input, $branch, $encode){
+      $this->auth_basic();
+      $this->getStuffing_post($input, $branch, $encode);
+      $this->getReceiving_post($input, $branch, $encode);
+      // buatkan funct returnnya
+    }
+
     function getStuffing_post($input, $branch, $encode) {
       $this->auth_basic();
       $devdb                            = $this->db;
