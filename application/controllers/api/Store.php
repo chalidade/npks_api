@@ -345,6 +345,100 @@ class Store extends BD_Controller {
       // buatkan funct returnnya
     }
 
+    function getTL_post($input, $branch, $encode) {
+        $arrdetilRec = '';
+        $arrdetilDel = '';
+        $detail   = $input["arrdetail"];
+        $header   = $input["header"];
+
+        // Receiving
+        foreach ($input["arrdetail"] as $dtlRec) {
+          $dtlRec = (array)$dtlRec;
+          $arrdetilRec .= '{
+              "REQ_DTL_CONT": "'.$dtlRec["TL_DTL_CONT"].'",
+              "REQ_DTL_CONT_STATUS": "'.$dtlRec["TL_DTL_CONT_SIZE"].'",
+              "REQ_DTL_COMMODITY": "'.$dtlRec["TL_DTL_CMDTY_NAME"].'",
+              "REQ_DTL_VIA": "'.$dtlRec["TL_DTL_VIA_REC_NAME"].'",
+              "REQ_DTL_SIZE": "'.$dtlRec["TL_DTL_CONT_SIZE"].'",
+              "REQ_DTL_TYPE": "'.$dtlRec["TL_DTL_CONT_TYPE"].'",
+              "REQ_DTL_CONT_HAZARD": "'.$dtlRec["TL_DTL_CONT_STATUS"].'",
+              "REQ_DTL_OWNER_CODE": "'.$dtlRec["TL_DTL_OWNER"].'",
+              "REQ_DTL_OWNER_NAME": "'.$dtlRec["TL_DTL_OWNER_NAME"].'"
+          },';
+        }
+
+        $arrdetilRec = substr($arrdetilRec, 0,-1);
+
+        $jsonReceiving     = '
+        {
+           "action" : "getReceiving",
+           "header": {
+              "REQ_NO": "'.$header["TL_NO"].'",
+              "REQ_RECEIVING_DATE": "'.$header["TL_CREATE_DATE"].'",
+              "NO_NOTA": "'.$header["TL_NOTA"].'",
+              "TGL_NOTA": "'.$header["TL_DATE"].'",
+              "NM_CONSIGNEE": "'.$header["TL_CUST_NAME"].'",
+              "ALAMAT": "'.$header["TL_CUST_ADDRESS"].'",
+              "REQ_MARK": "'.$header["TL_MSG"].'",
+              "NPWP": "'.$header["TL_CUST_NPWP"].'",
+              "RECEIVING_DARI": "'.$header["TL_FROM"].'",
+              "TANGGAL_LUNAS": "'.$header["TL_CORRECTION_DATE"].'",
+              "DI": "'.$header["TL_NO"].'"
+           },
+           "arrdetail": ['.$arrdetilRec.']
+            }';
+
+       $inputReceiving = json_encode(json_decode($jsonReceiving));
+       // End Receiving
+
+       // Delivery
+       foreach ($input["arrdetail"] as $dtlDel) {
+         $dtlDel = (array)$dtlDel;
+         $arrdetilDel .= '
+         {
+              "REQ_DTL_CONT": "'.$dtlDel["TL_DTL_CONT"].'",
+              "REQ_DTL_CONT_STATUS": "'.$dtlDel["TL_DTL_CONT_SIZE"].'",
+              "REQ_DTL_COMMODITY": "'.$dtlDel["TL_DTL_CMDTY_NAME"].'",
+              "REQ_DTL_VIA": "'.$dtlDel["TL_DTL_DEL_VIA_NAME"].'",
+              "REQ_DTL_SIZE": "'.$dtlDel["TL_DTL_CONT_SIZE"].'",
+              "REQ_DTL_TYPE": "'.$dtlDel["TL_DTL_CONT_TYPE"].'",
+              "REQ_DTL_DEL_DATE": "'.$dtlDel["TL_DTL_DEL_DATE"].'",
+              "REQ_DTL_CONT_HAZARD": "'.$dtlDel["TL_DTL_CONT_STATUS"].'",
+              "REQ_DTL_NO_SEAL": ""
+          },';
+       }
+
+       $arrdetilDel = substr($arrdetilDel, 0,-1);
+
+       $jsonDelivery     = '
+       {
+          "action" : "getDelivery",
+          "header":
+          {
+          "REQ_NO": "'.$header["TL_NO"].'",
+          "REQ_DELIVERY_DATE": "'.$header["TL_CREATE_DATE"].'5",
+          "NO_NOTA": "'.$header["TL_NOTA"].'",
+          "TGL_NOTA": "'.$header["TL_DATE"].'",
+          "NM_CONSIGNEE": "'.$header["TL_CUST_NAME"].'",
+          "ALAMAT": "'.$header["TL_CUST_ADDRESS"].'",
+          "REQ_MARK": "'.$header["TL_MSG"].'",
+          "NPWP": "'.$header["TL_CUST_NPWP"].'",
+          "DELIVERY_KE": "'.$header["TL_TO"].'",
+          "TANGGAL_LUNAS": "'.$header["TL_CORRECTION_DATE"].'",
+          "PERP_DARI": "",
+          "PERP_KE": ""
+          },
+          "arrdetail": ['.$arrdetilDel.']
+           }';
+
+      $inputDelivery = json_encode(json_decode($jsonDelivery));
+      // End Delivery
+
+      $this->auth_basic();
+      $this->getReceiving_post($inputReceiving, $branch, $encode);
+      $this->getDelivery_post($inputDelivery, $branch, $encode);
+    }
+
     function getStuffing_post($input, $branch, $encode) {
       $this->auth_basic();
       $devdb                            = $this->db;
