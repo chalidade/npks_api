@@ -1143,7 +1143,7 @@ class Store extends BD_Controller {
       $header                     = $input["header"];
       $detail                     = $input["arrdetail"];
 
-      $query                      = $repodb->where("PLUG_ID", $header["PLUG_ID"])->get('TX_REQ_PLUG_HDR');
+      $query                      = $repodb->where("PLUG_NO", $header["PLUG_NO"])->get('TX_REQ_PLUG_HDR');
       $resultQuery                = $query->result_array();
 
 
@@ -1202,6 +1202,27 @@ class Store extends BD_Controller {
         foreach ($detail as $detail) {
           $queryDtlId             = $db->select("SEQ_TX_REQ_PLUG_DTL.NEXTVAL AS ID")->get('DUAL');
           $dtlID                  = $queryDtlId->result_array();
+
+          // Insert History Container
+          // $this->db->query("CALL ADD_HISTORY_CONTAINER(
+          //         '" . $detail["PLUG_DTL_CONT"] . "',
+          //         '" . $header["PLUG_NO"] . "',
+          //         '" . $header["PLUG_CREATE_DATE"] . "',
+          //         '" . $detail["PLUG_DTL_CONT_SIZE"] . "',
+          //         '',
+          //         '" . $detail["PLUG_DTL_STATUS"] . "',
+          //         NULL,
+          //         NULL,
+          //         NULL,
+          //         NULL,
+          //         NULL,
+          //         4,
+          //         'Request Pluggin',
+          //         NULL,
+          //         NULL,
+          //         " . $branch . ",
+          //         NULL,
+          //         NULL)");
 
           $storeDetail            = [
             "PLUG_DTL_ID"              => $dtlID[0]["ID"],
