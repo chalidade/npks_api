@@ -163,11 +163,30 @@ class View extends BD_Controller {
       $newdt                          = [];
 
       foreach ($data as $data) {
-        $sqlgetIn                     = $repodb->select("REAL_STORAGE_REQ as NO_REQUEST, REAL_STORAGE_SI as NO_CONTAINER,REAL_STORAGE_BRANCH_ID as BRANCH_ID,SUM( REAL_STORAGE_IN ) as JUMLAH")
+        $sqlgetIn                     = $repodb->select("
+                                                        REAL_STORAGE_CREATE_BY as CREATE_BY,
+                                                        TO_CHAR(REAL_STORAGE_CREATE_DATE,'MM/DD/YYYY HH24:MI:SS') AS REAL_DATE,
+                                                        REAL_STORAGE_ID as REAL_ID,
+                                                        REAL_STORAGE_STATUS as STATUS,
+                                                        REAL_STORAGE_REQ as NO_REQUEST,
+                                                        REAL_STORAGE_SI as NO_CONTAINER,
+                                                        REAL_STORAGE_BRANCH_ID as BRANCH_ID,
+                                                        SUM( REAL_STORAGE_IN ) as JUMLAH
+                                                        ")
                                                ->where("REAL_STORAGE_SI",$data["NO_CONTAINER"])
                                                ->where("REAL_STORAGE_REQ",$data["NO_REQUEST"])
                                                ->where("REAL_STORAGE_BRANCH_ID",$data["BRANCH_ID"])
-                                               ->group_by("REAL_STORAGE_BRANCH_ID,REAL_STORAGE_BRANCH_ID,REAL_STORAGE_REQ,REAL_STORAGE_SI")
+                                               ->group_by("
+                                                          REAL_STORAGE_STATUS,
+                                                          REAL_STORAGE_ID,
+                                                          REAL_STORAGE_CREATE_DATE,
+                                                          REAL_STORAGE_CREATE_BY,
+                                                          REAL_STORAGE_BRANCH_ID,
+                                                          REAL_STORAGE_BRANCH_ID,
+                                                          REAL_STORAGE_REQ,
+                                                          REAL_STORAGE_SI
+                                                          ")
+                                               ->order_by("REAL_STORAGE_CREATE_DATE", "ASC")
                                                ->get('TX_REAL_STORAGE');
         $resultservices               = $sqlgetIn->result_array();
 
@@ -438,8 +457,7 @@ class View extends BD_Controller {
                                              ->where("REAL_PLUG_NOREQ",$dataStart["NO_REQUEST"])
                                              ->where("REAL_PLUG_BRANCH_ID",$dataStart["BRANCH_ID"])
                                              ->where("REAL_PLUG_STATUS",1)
-                                             ->select("TX_REAL_PLUG.*, REAL_PLUG_NOREQ as NO_REQUEST,REAL_PLUG_CONT as NO_CONTAINER,REAL_PLUG_STATUS,REAL_PLUG_DATE,REAL_PLUG_BRANCH_ID")
-                                             ->order_by("REAL_PLUG_DATE", "ASC")
+                                             ->select("TX_REAL_PLUG.*, REAL_PLUG_NOREQ as NO_REQUEST, REAL_PLUG_CONT as NO_CONTAINER,REAL_PLUG_STATUS as STATUS,TO_CHAR(REAL_PLUG_DATE,'YYYY-MM-DD HH24:MI:SS') as REAL_PLUG,REAL_PLUG_BRANCH_ID")
                                              ->get("TX_REAL_PLUG");
 
         $resultservicesStart        = $sqlfumiStart->result_array();
@@ -457,7 +475,7 @@ class View extends BD_Controller {
                                              ->where("REAL_PLUG_NOREQ",$dataFinish["NO_REQUEST"])
                                              ->where("REAL_PLUG_BRANCH_ID",$dataFinish["BRANCH_ID"])
                                              ->where("REAL_PLUG_STATUS",2)
-                                             ->select("REAL_PLUG_NOREQ as NO_REQUEST,REAL_PLUG_CONT as NO_CONTAINER,REAL_PLUG_STATUS,REAL_PLUG_DATE,REAL_PLUG_BRANCH_ID")
+                                             ->select("TX_REAL_PLUG.*,TO_CHAR(REAL_PLUG_DATE,'YYYY-MM-DD HH24:MI:SS') as REAL_PLUG, REAL_PLUG_NOREQ as NO_REQUEST,REAL_PLUG_CONT as NO_CONTAINER,REAL_PLUG_STATUS as STATUS,REAL_PLUG_BRANCH_ID")
                                              ->order_by("REAL_PLUG_DATE", "ASC")
                                              ->get("TX_REAL_PLUG");
 

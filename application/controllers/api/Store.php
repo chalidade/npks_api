@@ -231,7 +231,8 @@ class Store extends BD_Controller {
             $REQ_DTL_CONT               = $val['REQ_DTL_CONT'];
             $REQ_DTL_CONT_STATUS        = $val['REQ_DTL_CONT_STATUS'];
             $REQ_DTL_COMMODITY          = $val['REQ_DTL_COMMODITY'];
-            $REQ_DTL_VIA                = $val['REQ_DTL_VIA'];
+            $REQ_DTL_VIA_ID             = $val['REQ_DTL_VIA_ID'];
+            $REQ_DTL_VIA_NAME           = $val['REQ_DTL_VIA_NAME'];
             $REQ_DTL_TYPE               = $val['REQ_DTL_TYPE'];
             $REQ_DTL_SIZE               = $val['REQ_DTL_SIZE'];
             $REQ_DTL_DEL_DATE           = $val['REQ_DTL_DEL_DATE'];
@@ -250,7 +251,9 @@ class Store extends BD_Controller {
                       REQ_DTL_CONT_TYPE,
                       REQ_DTL_COMMODITY,
                       REQ_DTL_DEL_DATE,
-                      REQ_DTL_NO_SEAL
+                      REQ_DTL_NO_SEAL,
+                      REQ_DTL_VIA_ID,
+                      REQ_DTL_VIA
                     )
                     VALUES
                     (
@@ -263,7 +266,9 @@ class Store extends BD_Controller {
                       '" . $REQ_DTL_TYPE . "',
                       '" . $REQ_DTL_COMMODITY . "',
                       TO_DATE('" . $REQ_DTL_DEL_DATE . "','MM/DD/YYYY HH24:MI:SS'),
-                      '" . $REQ_DTL_NO_SEAL . "'
+                      '" . $REQ_DTL_NO_SEAL . "',
+                      '" . $REQ_DTL_VIA_ID . "',
+                      '" . $REQ_DTL_VIA_NAME . "'
                     )";
             $resultDtl = $this->reponpks->query($queryDTL);
             if ($resultDtl)
@@ -1204,25 +1209,26 @@ class Store extends BD_Controller {
           $dtlID                  = $queryDtlId->result_array();
 
           // Insert History Container
-          // $this->db->query("CALL ADD_HISTORY_CONTAINER(
-          //         '" . $detail["PLUG_DTL_CONT"] . "',
-          //         '" . $header["PLUG_NO"] . "',
-          //         '" . $header["PLUG_CREATE_DATE"] . "',
-          //         '" . $detail["PLUG_DTL_CONT_SIZE"] . "',
-          //         '',
-          //         '" . $detail["PLUG_DTL_STATUS"] . "',
-          //         NULL,
-          //         NULL,
-          //         NULL,
-          //         NULL,
-          //         NULL,
-          //         4,
-          //         'Request Pluggin',
-          //         NULL,
-          //         NULL,
-          //         " . $branch . ",
-          //         NULL,
-          //         NULL)");
+          $recDate                = date('m/d/Y',strtotime($header["PLUG_CREATE_DATE"]));
+          $this->db->query("CALL ADD_HISTORY_CONTAINER(
+                  '" . $detail["PLUG_DTL_CONT"] . "',
+                  '" . $header["PLUG_NO"] . "',
+                  '" . $recDate . "',
+                  '" . $detail["PLUG_DTL_CONT_SIZE"] . "',
+                  '',
+                  '" . $detail["PLUG_DTL_STATUS"] . "',
+                  NULL,
+                  NULL,
+                  NULL,
+                  NULL,
+                  NULL,
+                  4,
+                  'Request Pluggin',
+                  NULL,
+                  NULL,
+                  " . $branch . ",
+                  NULL,
+                  NULL)");
 
           $storeDetail            = [
             "PLUG_DTL_ID"              => $dtlID[0]["ID"],
@@ -1313,6 +1319,28 @@ class Store extends BD_Controller {
         foreach ($detail as $detail) {
           $queryDtlId             = $db->select("SEQ_REQ_FUMI_DTL.NEXTVAL AS ID")->get('DUAL');
           $dtlID                  = $queryDtlId->result_array();
+
+          // Insert History Container
+          $recDate                = date('m/d/Y',strtotime($header["FUMI_CREATE_DATE"]));
+          $this->db->query("CALL ADD_HISTORY_CONTAINER(
+                  '" . $detail["FUMI_DTL_CONT"] . "',
+                  '" . $header["FUMI_NO"] . "',
+                  '" . $recDate . "',
+                  '" . $detail["FUMI_DTL_CONT_SIZE"] . "',
+                  '',
+                  '" . $detail["FUMI_DTL_CONT_STATUS"] . "',
+                  NULL,
+                  NULL,
+                  NULL,
+                  NULL,
+                  NULL,
+                  4,
+                  'Request Fumigasi',
+                  NULL,
+                  NULL,
+                  " . $branch . ",
+                  NULL,
+                  NULL)");
 
           $storeDetail            = [
             "FUMI_DTL_ID"              => $dtlID[0]["ID"],
@@ -1704,18 +1732,19 @@ class Store extends BD_Controller {
             $resultcekdtl = $sqlcek->result_array();
 
             if (empty($resultcekdtl)) {
-              $sqlIDTL = "SELECT SEQ_REQ_RECEIVING_DTL.NEXTVAL AS ID FROM DUAL";
-              $resultIDTL = $this->db->query($sqlIDTL)->result_array();
-              $IDdetail = $resultIDTL[0]['ID'];
-              $REQ_DTL_CONT = $val['REQ_DTL_CONT'];
-              $REQ_DTL_CONT_STATUS = $val['REQ_DTL_CONT_STATUS'];
-              $REQ_DTL_COMMODITY = $val['REQ_DTL_COMMODITY'];
-              $REQ_DTL_VIA = $val['REQ_DTL_VIA'];
-              $REQ_DTL_SIZE = $val['REQ_DTL_SIZE'];
-              $REQ_DTL_TYPE = $val['REQ_DTL_TYPE'];
-              $REQ_DTL_CONT_HAZARD = $val['REQ_DTL_CONT_HAZARD'];
+              $sqlIDTL                = "SELECT SEQ_REQ_RECEIVING_DTL.NEXTVAL AS ID FROM DUAL";
+              $resultIDTL             = $this->db->query($sqlIDTL)->result_array();
+              $IDdetail               = $resultIDTL[0]['ID'];
+              $REQ_DTL_CONT           = $val['REQ_DTL_CONT'];
+              $REQ_DTL_CONT_STATUS    = $val['REQ_DTL_CONT_STATUS'];
+              $REQ_DTL_COMMODITY      = $val['REQ_DTL_COMMODITY'];
+              $REQ_DTL_VIA_ID         = $val['REQ_DTL_VIA_ID'];
+              $REQ_DTL_VIA_NAME       = $val['REQ_DTL_VIA_NAME'];
+              $REQ_DTL_SIZE           = $val['REQ_DTL_SIZE'];
+              $REQ_DTL_TYPE           = $val['REQ_DTL_TYPE'];
+              $REQ_DTL_CONT_HAZARD    = $val['REQ_DTL_CONT_HAZARD'];
               $REQUEST_DTL_OWNER_CODE = $val['REQ_DTL_OWNER_CODE'];
-              $REQ_DTL_OWNER_NAME = $val['REQ_DTL_OWNER_NAME'];
+              $REQ_DTL_OWNER_NAME     = $val['REQ_DTL_OWNER_NAME'];
 
               $queryDTL = "INSERT INTO TX_REQ_RECEIVING_DTL
               (
@@ -1728,7 +1757,9 @@ class Store extends BD_Controller {
               REQUEST_DTL_CONT_TYPE,
               REQUEST_DTL_COMMODITY,
               REQUEST_DTL_OWNER_CODE,
-              REQUEST_DTL_OWNER_NAME
+              REQUEST_DTL_OWNER_NAME,
+              REQUEST_DTL_VIA,
+              REQUEST_DTL_VIA_ID
               )
               VALUES
               (
@@ -1741,7 +1772,9 @@ class Store extends BD_Controller {
               '" . $REQ_DTL_TYPE . "',
               '" . $REQ_DTL_COMMODITY . "',
               '" . $REQUEST_DTL_OWNER_CODE . "',
-              '" . $REQ_DTL_OWNER_NAME . "'
+              '" . $REQ_DTL_OWNER_NAME . "',
+              '" . $REQ_DTL_VIA_NAME . "',
+              '" . $REQ_DTL_VIA_ID . "'
               )";
               $resultDtl = $this->reponpks->query($queryDTL);
               if ($resultDtl) {
@@ -1794,32 +1827,6 @@ class Store extends BD_Controller {
             }
           }
         }
-
-        // // Syncronize Database PlG - PLG_REPO
-        // $link        = oci_connect('NPKS_PLG_REPO', 'npksplgrepo', '10.88.48.34:1521/INVDB');
-        // // Syn Header
-        // $sqlHeader   = "
-        // DECLARE
-        // v_flag VARCHAR2(2);
-        // v_msg VARCHAR2(100);
-        // BEGIN PKG_SYNC_TABLE.P_TX_REQ_RECEIVING_HDR(v_flag,v_msg);
-        // end;
-        // ";
-        //
-        // $stmtHeader       = oci_parse($link, $sqlHeader);
-        // $queryHeader      = oci_execute($stmtHeader);
-        //
-        // // Syn Detail
-        // $sqlDetail   = "
-        // DECLARE
-        // v_flag VARCHAR2(2);
-        // v_msg VARCHAR2(100);
-        // BEGIN PKG_SYNC_TABLE.P_TX_REQ_RECEIVING_DTL(v_flag,v_msg);
-        // end;
-        // ";
-        //
-        // $stmtDetail       = oci_parse($link, $sqlDetail);
-        // $queryDetail      = oci_execute($stmtDetail);
 
         //start call nodejs
   				$updateGateJobManager = curl_init(SERVICE_SERVER_NODEJS."/updateGateJobManager?branch=".$branch."");
@@ -2075,6 +2082,107 @@ class Store extends BD_Controller {
         echo json_encode($result);
       }
 
+      function getCancelledReq_post($input, $branch,$encode) {
+        $db                         = $this->db;
+        $repodb                     = $this->reponpks;
+        $header                     = $input["header"];
+        $detail                     = $input["arrdetail"];
+
+        foreach ($detail as $detail) {
+          if (!empty($detail["REQ_DTL_CONT"])) {
+            $noContainer           = $detail["REQ_DTL_CONT"];
+          } else {
+            $noContainer           = $detail["REQ_DTL_SI"];
+          }
+
+          $query                      = $repodb->where("CANCELLED_NOREQ", $header["REQ_NO"])->where("CANCELLED_NO_CONT", $noContainer)->get('TH_CANCELLED');
+          $resultQuery                = $query->result_array();
+
+          if (empty($resultQuery)) {
+          $storeDetail            = [
+            "CANCELLED_NOREQ"       => $header["REQ_CANCEL_NO"],
+            "CANCELLED_NO_CONT"     => $noContainer,
+            "CANCELLED_CREATE_DATE" => "",
+            "CANCELLED_CREATE_BY"   => "",
+            "CANCELLED_MARK"        => $header["REQ_MARK"],
+            "CANCELLED_STATUS"      => $header["CANCELLED_STATUS"],
+            "CANCELLED_NOREQ_OLD"   => $header["REQ_NO"],
+            "CANCELLED_REQ_DATE"    => $header["REQ_RECEIVING_DATE"],
+            "CANCELLED_BRANCH_ID"   => $branch,
+            "CANCELLED_NOREQ_NEW"   => ""
+          ];
+
+          $det                    = $db->set($storeDetail)->get_compiled_insert('TH_CANCELLED');
+          $queryDtl               = $this->reponpks->query($det);
+          $result["MSG"]          = "Success";
+          $result["DETAIL"][]     = $storeDetail;
+
+          if ($header["CANCELLED_STATUS"] == 17) {
+            //Batal Delivery Container
+            $queryhdr             = $repodb->where("REQ_NO", $header["REQ_NO"])->get('TX_REQ_DELIVERY_HDR');
+            $hdrData              = $queryhdr->result_array();
+            $hdrId                = $hdrData[0]->req_id;
+            $update               = $db->set("REQ_DTL_ACTIVE", "T")->where('REQ_DTL_CONT', $noContainer)->where('REQ_HDR_ID', $hdrId)->update('TX_REQ_DELIVERY_DTL');
+          } else if($header["CANCELLED_STATUS"] == 16) {
+            // Batal Receiving
+            $queryhdr             = $repodb->where("REQUEST_NO", $header["REQ_NO"])->get('TX_REQ_RECEIVING_HDR');
+            $hdrData              = $queryhdr->result_array();
+            $hdrId                = $hdrData[0]->request_id;
+            $update               = $db->set("REQUEST_DTL_CANCELLED", "Y")->where('REQUEST_DTL_CONT', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_RECEIVING_DTL');
+          } else if($header["CANCELLED_STATUS"] == 8) {
+            // Batal Stuffing
+            $queryhdr             = $repodb->where("STUFF_NO", $header["REQ_NO"])->get('TX_REQ_STUFF_HDR');
+            $hdrData              = $queryhdr->result_array();
+            $hdrId                = $hdrData[0]->stuff_id;
+            $update               = $db->set("STUFF_DTL_ACTIVE", "T")->set("STUFF_DTL_CANCELLED", "Y")->set("STUFF_DTL_STATUS", "2")->where('STUFF_DTL_CONT', $noContainer)->where('STUFF_DTL_HDR_ID', $hdrId)->update('TX_REQ_STUFF_DTL');
+
+            $cek_jumlah_dtl       = $repodb->where('STUFF_DTL_HDR_ID',$hdrId)->from('TX_REQ_STUFF_DTL')->count_all_results();
+						$cek_jumlah_out       = $repodb->where('STUFF_DTL_HDR_ID',$hdrId)->where('STUFF_DTL_ACTIVE','T')->from('TX_REQ_STUFF_DTL')->count_all_results();
+
+            if($cek_jumlah_out == $cek_jumlah_dtl){
+							$repodb->set('STUFF_STATUS',2)->where('STUFF_ID',$hdrId)->update('TX_REQ_STUFF_HDR');
+						}
+          } else if($header["CANCELLED_STATUS"] == 18) {
+            // Batal Stuffing
+            $queryhdr             = $repodb->where("STRIP_NO", $header["REQ_NO"])->get('TX_REQ_STRIP_HDR');
+            $hdrData              = $queryhdr->result_array();
+            $hdrId                = $hdrData[0]->strip_id;
+            $update               = $db->set("STRIP_DTL_ACTIVE", "T")->set("STRIP_DTL_CANCELLED", "Y")->set("STRIP_DTL_STATUS", "2")->where('STRIP_DTL_CONT', $noContainer)->where('STRIP_DTL_HDR_ID', $hdrId)->update('TX_REQ_STRIP_DTL');
+
+            $cek_jumlah_dtl       = $repodb->where('STRIP_DTL_HDR_ID',$hdrId)->from('TX_REQ_STRIP_DTL')->count_all_results();
+						$cek_jumlah_out       = $repodb->where('STRIP_DTL_HDR_ID',$hdrId)->where('STRIP_DTL_ACTIVE','T')->from('TX_REQ_STRIP_DTL')->count_all_results();
+
+            if($cek_jumlah_out == $cek_jumlah_dtl){
+							$repodb->set('STRIP_STATUS',2)->where('STRIP_ID',$hdrId)->update('TX_REQ_STRIP_HDR');
+						}
+          }
+
+        } else {
+          $storeDetail            = [
+            "CANCELLED_NOREQ"       => $header["REQ_NO"],
+            "CANCELLED_NO_CONT"     => $noContainer,
+            "CANCELLED_CREATE_DATE" => "",
+            "CANCELLED_CREATE_BY"   => "",
+            "CANCELLED_MARK"        => $header["REQ_MARK"],
+            "CANCELLED_STATUS"      => "",
+            "CANCELLED_NOREQ_OLD"   => "",
+            "CANCELLED_REQ_DATE"    => $header["REQ_RECEIVING_DATE"],
+            "CANCELLED_BRANCH_ID"   => $branch,
+            "CANCELLED_NOREQ_NEW"   => ""
+          ];
+
+          $result["MSG"]          = "Already Exist";
+          $result["DETAIL"][]     = $storeDetail;
+          }
+        }
+
+          if ($encode == "true") {
+            $out["result"] = base64_encode(json_encode($result));
+            echo json_encode($out);
+          } else {
+            echo json_encode($result);
+          }
+      }
 
 }
 ?>
