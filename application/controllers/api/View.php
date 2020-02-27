@@ -163,32 +163,64 @@ class View extends BD_Controller {
       $newdt                          = [];
 
       foreach ($data as $data) {
-        $sqlgetIn                     = $repodb->select("
-                                                        REAL_STORAGE_CREATE_BY as CREATE_BY,
-                                                        TO_CHAR(REAL_STORAGE_CREATE_DATE,'MM/DD/YYYY HH24:MI:SS') AS REAL_DATE,
-                                                        REAL_STORAGE_ID as REAL_ID,
-                                                        REAL_STORAGE_STATUS as STATUS,
-                                                        REAL_STORAGE_REQ as NO_REQUEST,
-                                                        REAL_STORAGE_SI as NO_CONTAINER,
-                                                        REAL_STORAGE_BRANCH_ID as BRANCH_ID,
-                                                        SUM( REAL_STORAGE_IN ) as JUMLAH
-                                                        ")
-                                               ->where("REAL_STORAGE_SI",$data["NO_CONTAINER"])
-                                               ->where("REAL_STORAGE_REQ",$data["NO_REQUEST"])
-                                               ->where("REAL_STORAGE_BRANCH_ID",$data["BRANCH_ID"])
-                                               ->group_by("
-                                                          REAL_STORAGE_STATUS,
-                                                          REAL_STORAGE_ID,
-                                                          REAL_STORAGE_CREATE_DATE,
-                                                          REAL_STORAGE_CREATE_BY,
-                                                          REAL_STORAGE_BRANCH_ID,
-                                                          REAL_STORAGE_BRANCH_ID,
-                                                          REAL_STORAGE_REQ,
-                                                          REAL_STORAGE_SI
-                                                          ")
-                                               ->order_by("REAL_STORAGE_CREATE_DATE", "ASC")
-                                               ->get('TX_REAL_STORAGE');
-        $resultservices               = $sqlgetIn->result_array();
+        $noContainer = $data['NO_CONTAINER'];
+        $noRequest   = $data['NO_REQUEST'];
+        $branchId    = $data["BRANCH_ID"];
+
+        $query   = "
+                    SELECT
+                    	X.*
+                    FROM
+                    	(
+                    	SELECT
+                    		A.REAL_STORAGE_ID,
+                    		MIN(A.REAL_STORAGE_ID) OVER (PARTITION BY A.REAL_STORAGE_REQ,A.REAL_STORAGE_SI) AS id_selected,
+                    		A.REAL_STORAGE_REQ as NO_REQUEST,
+                    		A.REAL_STORAGE_SI as NO_CONTAINER,
+                    		STORAGE_TOTAL,
+                    		A.REAL_STORAGE_TRUCK,
+                    		A.REAL_STORAGE_TOTAL,
+                    		A.REAL_STORAGE_COUNTER,
+                    		A.REAL_STORAGE_STATUS,
+                    		A.REAL_STORAGE_ACTIVITY,
+                    		A.REAL_STORAGE_EQUIPMENT_ID,
+                    		A.REAL_STORAGE_EQUIPMENT_NAME,
+                    		A.REAL_STORAGE_OPERATOR,
+                    		A.REAL_STORAGE_STORAGE,
+                    		A.REAL_STORAGE_BRANCH_ID as BRANCH_ID,
+                    		A.REAL_STORAGE_CREATE_BY,
+                    		TO_CHAR(A.REAL_STORAGE_CREATE_DATE,'MM/DD/YYYY HH24:MI:SS') AS REAL_DATE,
+                    		A.REAL_STORAGE_USED,
+                    		A.REAL_STORAGE_YARD_ID,
+                    		A.REAL_STORAGE_IN,
+                    		A.REAL_STORAGE_OUT,
+                    		A.REAL_MARK_BACKDATE
+                    	FROM
+                    		TX_REAL_STORAGE A,
+                    		(
+                    		SELECT
+                    			C.REAL_STORAGE_REQ,
+                    			C.REAL_STORAGE_SI,
+                    			SUM(C.REAL_STORAGE_TOTAL) STORAGE_TOTAL
+                    		FROM
+                    			TX_REAL_STORAGE C
+                    		GROUP BY
+                    			C.REAL_STORAGE_REQ,
+                    			C.REAL_STORAGE_SI) B
+                    	WHERE
+                    		A.REAL_STORAGE_REQ = B.REAL_STORAGE_REQ
+                    		AND A.REAL_STORAGE_SI = B.REAL_STORAGE_SI
+                        AND A.REAL_STORAGE_SI = '$noContainer'
+                        AND A.REAL_STORAGE_REQ = '$noRequest'
+                        AND A.REAL_STORAGE_BRANCH_ID = '$branchId'
+                    	ORDER BY
+                    		REAL_STORAGE_CREATE_DATE )X
+                    WHERE
+                    X.REAL_STORAGE_ID = X.id_selected
+                  ";
+
+        $result          = $repodb->query($query);
+        $resultservices  = $result->result_array();
 
         $data_view = json_encode($resultservices);
         $data_use  = json_decode($data_view);
