@@ -254,12 +254,11 @@ class View extends BD_Controller {
       $newdt                          = [];
 
       foreach ($data as $data) {
-        $sqlgetIn                     = $repodb->select("REAL_STORAGE_REQ as NO_REQUEST, REAL_STORAGE_SI as NO_CONTAINER,REAL_STORAGE_BRANCH_ID as BRANCH_ID,SUM( REAL_STORAGE_OUT ) as JUMLAH")
-                                               ->where("REAL_STORAGE_SI",$data["NO_CONTAINER"])
-                                               ->where("REAL_STORAGE_REQ",$data["NO_REQUEST"])
-                                               ->where("REAL_STORAGE_BRANCH_ID",$data["BRANCH_ID"])
-                                               ->group_by("REAL_STORAGE_BRANCH_ID,REAL_STORAGE_BRANCH_ID,REAL_STORAGE_REQ,REAL_STORAGE_SI")
-                                               ->get('TX_REAL_STORAGE');
+        $sqlgetIn                     = $repodb->select("TX_REAL_DELIVERY_BRG.*, DELIVERY_REQ as NO_REQUEST, DELIVERY_SI as NO_CONTAINER,DELIVERY_BRANCH_ID as BRANCH_ID")
+                                               ->where("DELIVERY_SI",$data["NO_CONTAINER"])
+                                               ->where("DELIVERY_REQ",$data["NO_REQUEST"])
+                                               ->where("DELIVERY_BRANCH_ID",$data["BRANCH_ID"])
+                                               ->get('TX_REAL_DELIVERY_BRG');
         $resultservices               = $sqlgetIn->result_array();
 
         $data_view = json_encode($resultservices);
