@@ -254,7 +254,7 @@ class View extends BD_Controller {
       $newdt                          = [];
 
       foreach ($data as $data) {
-        $sqlgetIn                     = $repodb->select("TX_REAL_DELIVERY_BRG.*, DELIVERY_REQ as NO_REQUEST, DELIVERY_SI as NO_CONTAINER,DELIVERY_BRANCH_ID as BRANCH_ID")
+        $sqlgetIn                     = $repodb->select("TX_REAL_DELIVERY_BRG.*, DELIVERY_REQ as NO_REQUEST, DELIVERY_SI as NO_CONTAINER,DELIVERY_BRANCH_ID as BRANCH_ID, DELIVERY_TOTAL as JUMLAH")
                                                ->where("DELIVERY_SI",$data["NO_CONTAINER"])
                                                ->where("DELIVERY_REQ",$data["NO_REQUEST"])
                                                ->where("DELIVERY_BRANCH_ID",$data["BRANCH_ID"])
