@@ -254,12 +254,57 @@ class View extends BD_Controller {
       $newdt                          = [];
 
       foreach ($data as $data) {
-        $sqlgetIn                     = $repodb->select("TX_REAL_DELIVERY_BRG.*, DELIVERY_REQ as NO_REQUEST, DELIVERY_SI as NO_CONTAINER,DELIVERY_BRANCH_ID as BRANCH_ID, DELIVERY_TOTAL as JUMLAH")
-                                               ->where("DELIVERY_SI",$data["NO_CONTAINER"])
-                                               ->where("DELIVERY_REQ",$data["NO_REQUEST"])
-                                               ->where("DELIVERY_BRANCH_ID",$data["BRANCH_ID"])
-                                               ->get('TX_REAL_DELIVERY_BRG');
-        $resultservices               = $sqlgetIn->result_array();
+        $noContainer = $data['NO_CONTAINER'];
+        $noRequest   = $data['NO_REQUEST'];
+        $branchId    = $data["BRANCH_ID"];
+        $query   = "
+                  SELECT
+                      X.*
+                      FROM
+                      (
+                      SELECT
+                      A.DELIVERY_ID,
+                      MAX(A.DELIVERY_ID) OVER (PARTITION BY A.DELIVERY_REQ,A.DELIVERY_SI) AS id_selected,
+                      A.DELIVERY_REQ,
+                      A.DELIVERY_SI,
+                      REAL_DELIVERY_TOTAL,
+                      A.DELIVERY_TRUCK,
+                      A.DELIVERY_TOTAL,
+                      A.DELIVERY_COUNTER,
+                      A.DELIVERY_STATUS,
+                      A.DELIVERY_ACTIVITY,
+                      A.DELIVERY_EQUIPMENT,
+                      A.DELIVERY_OPERATOR,
+                      A.DELIVERY_CREATE_BY,
+                      A.DELIVERY_CREATE_DATE,
+                      A.DELIVERY_BRANCH_ID,
+                      A.DELIVERY_EQUIPMENT_NAME,
+                      A.DELIVERY_STORAGE
+                      FROM
+                      TX_REAL_DELIVERY_BRG A,
+                      (
+                      SELECT
+                      C.DELIVERY_REQ,
+                      C.DELIVERY_SI,
+                      SUM(C.DELIVERY_TOTAL) REAL_DELIVERY_TOTAL
+                      FROM
+                      TX_REAL_DELIVERY_BRG C
+                      GROUP BY
+                      C.DELIVERY_REQ,
+                      C.DELIVERY_SI) B
+                      WHERE
+                      A.DELIVERY_REQ = B.DELIVERY_REQ
+                      AND A.DELIVERY_SI = B.DELIVERY_SI
+                      AND A.DELIVERY_SI = '$noContainer'
+                      AND A.DELIVERY_REQ = '$noRequest'
+                      AND A.DELIVERY_BRANCH_ID = '$branchId'
+                      ORDER BY
+                      DELIVERY_CREATE_DATE DESC )X
+                      WHERE X.DELIVERY_ID = X.id_selected
+                  ";
+
+        $result                       = $repodb->query($query);
+        $resultservices               = $result->result_array();
 
         $data_view = json_encode($resultservices);
         $data_use  = json_decode($data_view);
