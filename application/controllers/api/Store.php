@@ -110,6 +110,7 @@ class Store extends BD_Controller {
       $NM_CONSIGNEE        = $header['NM_CONSIGNEE'];
       $ALAMAT              = $header['ALAMAT'];
       $REQ_MARK            = $header['REQ_MARK'];
+      $PAYMENT             = $header['PAYMENT_METHOD'];
       $NPWP                = str_replace(".", "", str_replace("-", "", trim($header['NPWP'])));
       $DELIVERY_KE         = $header['DELIVERY_KE'];
       $TANGGAL_LUNAS       = $header['TANGGAL_LUNAS'];
@@ -178,6 +179,7 @@ class Store extends BD_Controller {
             REQUEST_STATUS,
             REQUEST_EXTEND_FROM,
             REQUEST_EXTEND_LOOP,
+            REQUEST_PAYMENT_METHOD,
             REQUEST_ALIH_KAPAL
           )
           VALUES
@@ -194,6 +196,7 @@ class Store extends BD_Controller {
             '1',
             '" . $PERP_DARI . "',
             " . $PERP_KE . ",
+            " . $PAYMENT . ",
             'Y'
           )";
 
@@ -350,6 +353,7 @@ class Store extends BD_Controller {
       // buatkan funct returnnya
     }
 
+    // bELUM
     function getTL_post($input, $branch, $encode) {
         $arrdetilRec = '';
         $arrdetilDel = '';
@@ -460,6 +464,7 @@ class Store extends BD_Controller {
       $REQ_MARK                         = $header['REQ_MARK'];
       $NO_BOOKING                       = $header['NO_BOOKING'];
       $NO_UKK                           = $header['NO_UKK'];
+      $PAYMENT                          = $header['PAYMENT_METHOD'];
       $NPWP                             = str_replace(".", "",str_replace("-", "", trim($header['NPWP'])));
       $ALAMAT                           = $header['ALAMAT'];
       $TANGGAL_LUNAS                    = $header['TANGGAL_LUNAS'];
@@ -532,6 +537,7 @@ class Store extends BD_Controller {
                                             STUFF_EXTEND_FROM,
                                             STUFF_EXTEND_LOOP,
                                             STUFF_ORIGIN,
+                                            STUFF_PAYMENT_METHOD,
                                             STUFF_STATUS
                                             )
                                           VALUES
@@ -550,6 +556,7 @@ class Store extends BD_Controller {
                                             '".$PERP_DARI."',
                                             ".$PERP_KE.",
                                             '".$STUFF_ORIGIN."',
+                                            '".$PAYMENT."',
                                             '1'
                                             )
                                           ";
@@ -810,6 +817,7 @@ class Store extends BD_Controller {
       $TGL_NOTA                     = $header['TGL_NOTA'];
       $REQ_STRIP_DATE               = $header['REQ_STRIP_DATE'];
       $NM_CONSIGNEE                 = $header['NM_CONSIGNEE'];
+      $PAYMENT                      = $header['PAYMENT_METHOD'];
       $NO_REQUEST_RECEIVING         = $header['NO_REQUEST_RECEIVING'];
       $PERP_DARI                    = $header['PERP_DARI'];
       $PERP_KE                      = $header['PERP_KE'];
@@ -879,6 +887,7 @@ class Store extends BD_Controller {
                                         STRIP_PAID_DATE,
                                         STRIP_NOREQ_RECEIVING,
                                         STRIP_EXTEND_FROM,STRIP_EXTEND_LOOP,
+                                        STRIP_PAYMENT_METHOD,
                                         STRIP_ORIGIN
                                       )
                                       VALUES
@@ -896,6 +905,7 @@ class Store extends BD_Controller {
                                         '".$NO_REQUEST_RECEIVING."',
                                         '".$PERP_DARI."',
                                         ".$PERP_KE.",
+                                        ".$PAYMENT.",
                                         '".$STRIP_DARI."'
                                       )";
 
@@ -1192,7 +1202,8 @@ class Store extends BD_Controller {
           "PLUG_CONSIGNEE_ID"     => $header["PLUG_CONSIGNEE_ID"],
           "PLUG_CREATE_DATE"      => $header["PLUG_CREATE_DATE"],
           "PLUG_CREATE_BY"        => $header["PLUG_CREATE_BY"],
-          "PLUG_STATUS"           => $header["PLUG_STATUS"]
+          "PLUG_STATUS"           => $header["PLUG_STATUS"],
+          "PLUG_PAYMENT_METHOD"   => $header["PAYMENT_METHOD"]
         ];
 
         $head                     = $repodb->set($storeHeader)->get_compiled_insert('TX_REQ_PLUG_HDR');
@@ -1305,7 +1316,8 @@ class Store extends BD_Controller {
           "FUMI_BRANCH_ID"        => $header["BRANCH_ID"],
           "FUMI_CONSIGNEE_ID"     => $header["FUMI_CONSIGNEE_ID"],
           "FUMI_CREATE_DATE"      => $header["FUMI_CREATE_DATE"],
-          "FUMI_CREATE_BY"        => $header["FUMI_CREATE_BY"]
+          "FUMI_CREATE_BY"        => $header["FUMI_CREATE_BY"],
+          "FUMI_PAYMENT_METHOD"   => $header["PAYMENT_METHOD"]
         ];
 
         $head                     = $repodb->set($storeHeader)->get_compiled_insert('TX_REQ_FUMI_HDR');
@@ -1438,7 +1450,8 @@ class Store extends BD_Controller {
           "REQUEST_FROM"          => $header["REQUEST_FROM"],
           "REQUEST_STATUS"        => $header["REQUEST_STATUS"],
           "REQUEST_DI"            => $header["REQUEST_DI"],
-          "REQUEST_BRANCH_ID"     => $header["BRANCH_ID"]
+          "REQUEST_BRANCH_ID"     => $header["BRANCH_ID"],
+          "REQUEST_PAYMENT_METHOD"=> $header['PAYMENT_METHOD']
         ];
 
         $head                     = $repodb->set($storeHeader)->get_compiled_insert('TX_REQ_RECEIVING_BRG_HDR');
@@ -1555,7 +1568,8 @@ class Store extends BD_Controller {
           "REQUEST_FROM"          => $header["REQUEST_FROM"],
           "REQUEST_STATUS"        => $header["REQUEST_STATUS"],
           "REQUEST_DI"            => $header["REQUEST_DI"],
-          "REQUEST_BRANCH_ID"     => $header["BRANCH_ID"]
+          "REQUEST_BRANCH_ID"     => $header["BRANCH_ID"],
+          "REQUEST_PAYMENT_METHOD"=> $header['PAYMENT_METHOD']
         ];
 
 
@@ -1617,6 +1631,7 @@ class Store extends BD_Controller {
       $TGL_NOTA           = $header['TGL_NOTA'];
       $NM_CONSIGNEE       = $header['NM_CONSIGNEE'];
       $ALAMAT             = $header['ALAMAT'];
+      $PAYMENT            = $header['PAYMENT_METHOD'];
       $REQ_MARK           = $header['REQ_MARK'];
       $NPWP               = str_replace(".", "", str_replace("-", "", trim($header['NPWP'])));
       $RECEIVING_DARI     = $header['RECEIVING_DARI'];
@@ -1688,6 +1703,7 @@ class Store extends BD_Controller {
           REQUEST_PAID_DATE,
           REQUEST_FROM,
           REQUEST_STATUS,
+          REQUEST_PAYMENT_METHOD,
           REQUEST_DI
           )
           VALUES
@@ -1703,6 +1719,7 @@ class Store extends BD_Controller {
           TO_DATE('" . $TANGGAL_LUNAS . "','MM/DD/YYYY HH24:MI:SS'),
           '" . $RECEIVING_DARI . "',
           '1',
+          '" . $PAYMENT . "',
           '" . $DI . "'
           )";
 
@@ -2169,6 +2186,33 @@ class Store extends BD_Controller {
 							$repodb->set('FUMI_STATUS',2)->where('FUMI_ID',$hdrId)->update('TX_REQ_FUMI_HDR');
 						}
           }
+
+          // REFF_NAME
+          $tmReff                 = $repodb->where("REFF_ID", $header["CANCELLED_STATUS"])->where('REFF_TR_ID', '4')->get('TM_REFF');
+          $reffData               = $tmReff->result_array();
+          $reffName               = $reffData[0]["REFF_NAME"];
+
+          //insert history container
+          $devdb->query("
+                CALL ADD_HISTORY_CONTAINER(
+                '".$noContainer."',
+                '".$header["REQ_NO"]."',
+                '".$header["REQ_RECEIVING_DATE"]."',
+                '',
+                '',
+                NULL,
+                NULL,
+                NULL,
+                NULL,
+                NULL,
+                NULL,
+                ".$header["CANCELLED_STATUS"].",
+                '".$reffName."',
+                NULL,
+                NULL,
+                4,
+                '',
+                NULL)");
 
         } else {
           $storeDetail            = [
