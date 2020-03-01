@@ -744,14 +744,14 @@ class Store extends BD_Controller {
                                               AND
                                                 STUFF_DTL_CONT = '".$REQ_DTL_CONT."'
                                               ";
-                $devdb->query($updateStuffTDL);
+                $repodb->query($updateStuffTDL);
 
-                $cek_tot_dtl            = $devdb->query("SELECT COUNT(*) JML FROM TX_REQ_STUFF_DTL WHERE STUFF_DTL_HDR_ID = (SELECT STUFF_ID FROM TX_REQ_STUFF_HDR WHERE STUFF_NO = '".$PERP_DARI."' AND STUFF_BRANCH_ID = ".$branch.")")->row()->JML;
-                $cek_tot_dtl_T          = $devdb->query("SELECT COUNT(*) JML FROM TX_REQ_STUFF_DTL WHERE STUFF_DTL_HDR_ID = (SELECT STUFF_ID FROM TX_REQ_STUFF_HDR WHERE STUFF_NO = '".$PERP_DARI."' AND STUFF_BRANCH_ID = ".$branch.") AND STUFF_DTL_ACTIVE = 'T' ")->row()->JML;
+                $cek_tot_dtl            = $repodb->query("SELECT COUNT(*) JML FROM TX_REQ_STUFF_DTL WHERE STUFF_DTL_HDR_ID = (SELECT STUFF_ID FROM TX_REQ_STUFF_HDR WHERE STUFF_NO = '".$PERP_DARI."' AND STUFF_BRANCH_ID = ".$branch.")")->row()->JML;
+                $cek_tot_dtl_T          = $repodb->query("SELECT COUNT(*) JML FROM TX_REQ_STUFF_DTL WHERE STUFF_DTL_HDR_ID = (SELECT STUFF_ID FROM TX_REQ_STUFF_HDR WHERE STUFF_NO = '".$PERP_DARI."' AND STUFF_BRANCH_ID = ".$branch.") AND STUFF_DTL_ACTIVE = 'T' ")->row()->JML;
 
                 if($cek_tot_dtl == $cek_tot_dtl_T){
                   $updateStuffHDR       = "UPDATE TX_REQ_STUFF_HDR SET STUFF_STATUS = '2' WHERE STUFF_NO = '".$PERP_DARI."' AND STUFF_BRANCH_ID = ".$branch." ";
-                  $devdb->query($updateStuffHDR);
+                  $repodb->query($updateStuffHDR);
                 }
               }
 
@@ -1084,7 +1084,7 @@ class Store extends BD_Controller {
                                               STRIP_DTL_CONT = '".$REQ_DTL_CONT."'
                                             ";
 
-                $devdb->query($updateStripTDL);
+                $repodb->query($updateStripTDL);
 
                 $cek_tot_dtl              = $repodb->query("SELECT COUNT(*) JML FROM TX_REQ_STRIP_DTL WHERE STRIP_DTL_HDR_ID = (SELECT STRIP_ID FROM TX_REQ_STRIP_HDR WHERE STRIP_NO = '".$PERP_DARI."' AND STRIP_BRANCH_ID = ".$branch.")")->row()->JML;
                 $cek_tot_dtl_T            = $repodb->query("SELECT COUNT(*) JML FROM TX_REQ_STRIP_DTL WHERE STRIP_DTL_HDR_ID = (SELECT STRIP_ID FROM TX_REQ_STRIP_HDR WHERE STRIP_NO = '".$PERP_DARI."' AND STRIP_BRANCH_ID = ".$branch.") AND STRIP_DTL_ACTIVE = 'T' ")->row()->JML;

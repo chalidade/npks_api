@@ -105,7 +105,6 @@ class View extends BD_Controller {
       $this->auth_basic();
       $devdb                        = $this->db;
       $repodb                       = $this->reponpks;
-      $branch                       = 3;
       $data                         = $input["data"];
 
       $newdt                        = [];
@@ -177,7 +176,7 @@ class View extends BD_Controller {
                     		MIN(A.REAL_STORAGE_ID) OVER (PARTITION BY A.REAL_STORAGE_REQ,A.REAL_STORAGE_SI) AS id_selected,
                     		A.REAL_STORAGE_REQ as NO_REQUEST,
                     		A.REAL_STORAGE_SI as NO_CONTAINER,
-                    		STORAGE_TOTAL,
+                    		STORAGE_TOTAL as JUMLAH,
                     		A.REAL_STORAGE_TRUCK,
                     		A.REAL_STORAGE_TOTAL,
                     		A.REAL_STORAGE_COUNTER,
@@ -201,7 +200,7 @@ class View extends BD_Controller {
                     		SELECT
                     			C.REAL_STORAGE_REQ,
                     			C.REAL_STORAGE_SI,
-                    			SUM(C.REAL_STORAGE_TOTAL) STORAGE_TOTAL
+                    			SUM(C.REAL_STORAGE_IN) STORAGE_TOTAL
                     		FROM
                     			TX_REAL_STORAGE C
                     		GROUP BY
@@ -231,9 +230,9 @@ class View extends BD_Controller {
       }
 
 
+      $result         = [];
       $out["count"]   = count($newdt);
       $out["result"]  = $newdt;
-
       if ($encode == "true") {
         $result["result"] = base64_encode(json_encode($out));
         echo json_encode($result);
@@ -265,9 +264,9 @@ class View extends BD_Controller {
                       SELECT
                       A.DELIVERY_ID,
                       MAX(A.DELIVERY_ID) OVER (PARTITION BY A.DELIVERY_REQ,A.DELIVERY_SI) AS id_selected,
-                      A.DELIVERY_REQ,
-                      A.DELIVERY_SI,
-                      REAL_DELIVERY_TOTAL,
+                      A.DELIVERY_REQ as NO_REQUEST,
+                      A.DELIVERY_SI as NO_CONTAINER,
+                      REAL_DELIVERY_TOTAL as JUMLAH,
                       A.DELIVERY_TRUCK,
                       A.DELIVERY_TOTAL,
                       A.DELIVERY_COUNTER,
@@ -276,7 +275,7 @@ class View extends BD_Controller {
                       A.DELIVERY_EQUIPMENT,
                       A.DELIVERY_OPERATOR,
                       A.DELIVERY_CREATE_BY,
-                      A.DELIVERY_CREATE_DATE,
+                      TO_CHAR(A.DELIVERY_CREATE_DATE,'MM/DD/YYYY HH24:MI:SS') AS REAL_DATE,
                       A.DELIVERY_BRANCH_ID,
                       A.DELIVERY_EQUIPMENT_NAME,
                       A.DELIVERY_STORAGE
@@ -314,7 +313,7 @@ class View extends BD_Controller {
         }
       }
 
-
+      $result         = [];
       $out["count"]   = count($newdt);
       $out["result"]  = $newdt;
 
@@ -332,7 +331,6 @@ class View extends BD_Controller {
       $this->auth_basic();
       $devdb                        = $this->db;
       $repodb                       = $this->reponpks;
-      $branch                       = 3;
       $data                         = $input["data"];
 
       $newdt                        = [];
@@ -388,7 +386,6 @@ class View extends BD_Controller {
       $devdb                        = $this->db;
       $repodb                       = $this->reponpks;
       $npksdb                       = $this->npks;
-      $branch                       = 3;
       $data                         = $input["data"];
 
       $all                          = [];
@@ -412,7 +409,7 @@ class View extends BD_Controller {
           $newDt  = [];
           foreach ($value as $key => $value) {
             $newDt[$key] = $value;
-            $newDt["STATUS"] = "fcl";
+            $newDt["STATUS"] = "FCL";
           }
         }
 
@@ -437,7 +434,6 @@ class View extends BD_Controller {
       $devdb                        = $this->db;
       $repodb                       = $this->reponpks;
       $npksdb                       = $this->npks;
-      $branch                       = 3;
       $data                         = $input["data"];
 
       $newdt                        = [];
@@ -479,7 +475,6 @@ class View extends BD_Controller {
       $devdb                        = $this->db;
       $repodb                       = $this->reponpks;
       $npksdb                       = $this->npks;
-      $branch                       = 3;
       $data                         = $input["data"];
 
       $newdt                        = [];
@@ -521,7 +516,6 @@ class View extends BD_Controller {
       $devdb                        = $this->db;
       $repodb                       = $this->reponpks;
       $npksdb                       = $this->npks;
-      $branch                       = 3;
       $data                         = $input["data"];
 
       $newDt                        = [];
@@ -587,7 +581,6 @@ class View extends BD_Controller {
       $devdb                        = $this->db;
       $repodb                       = $this->reponpks;
       $npksdb                       = $this->npks;
-      $branch                       = 3;
       $data                         = $input["data"];
 
       $all                          = [];
@@ -602,7 +595,6 @@ class View extends BD_Controller {
                                              ->get("TX_REAL_STRIP");
 
         $totalservice               = $sqlgetStrip->result_array();
-
         $data_view                  = json_encode($totalservice);
         $data_use                   = json_decode($data_view);
 
@@ -610,7 +602,7 @@ class View extends BD_Controller {
           $newDt  = [];
           foreach ($value as $key => $value) {
             $newDt[$key] = $value;
-            $newDt["STATUS"] = "mty";
+            $newDt["STATUS"] = "MTY";
           }
         }
 
@@ -628,5 +620,28 @@ class View extends BD_Controller {
       }
     }
 
+    function trackAndTrace_post($input,$branch, $encode) {
+      header('Content-Type: application/json');
+      $this->auth_basic();
+      $devdb                = $this->db;
+      $data                 = $input["data"];
+      $all                  = [];
+
+      foreach ($data as $data) {
+        $sqlHistory           = $devdb->where("HIST_CONT",$data["NO_CONTAINER"])->where('HIST_BRANCH_ID', $data["BRANCH_ID"])->get("TH_HISTORY_CONTAINER");
+        $resultservices       = $sqlHistory->result_array();
+        $all[] = $resultservices;
+      }
+
+      $out["count"]   = count($all);
+      $out["result"]  = $all;
+
+      if ($encode == "true") {
+        $result["result"] = base64_encode(json_encode($out));
+        echo json_encode($result);
+      } else {
+        echo json_encode($out);
+      }
+    }
 }
 ?>
