@@ -365,12 +365,13 @@ class Store extends BD_Controller {
           $dtlRec = (array)$dtlRec;
           $arrdetilRec .= '{
               "REQ_DTL_CONT": "'.$dtlRec["TL_DTL_CONT"].'",
-              "REQ_DTL_CONT_STATUS": "'.$dtlRec["TL_DTL_CONT_SIZE"].'",
+              "REQ_DTL_CONT_STATUS": "'.$dtlRec["TL_DTL_CONT_TYPE"].'",
               "REQ_DTL_COMMODITY": "'.$dtlRec["TL_DTL_CMDTY_NAME"].'",
-              "REQ_DTL_VIA": "'.$dtlRec["TL_DTL_VIA_REC_NAME"].'",
+              "REQ_DTL_VIA_NAME": "'.$dtlRec["TL_DTL_VIA_REC_NAME"].'",
+              "REQ_DTL_VIA_ID": "'.$dtlRec["TL_DTL_REC_VIA"].'",
               "REQ_DTL_SIZE": "'.$dtlRec["TL_DTL_CONT_SIZE"].'",
               "REQ_DTL_TYPE": "'.$dtlRec["TL_DTL_CONT_TYPE"].'",
-              "REQ_DTL_CONT_HAZARD": "'.$dtlRec["TL_DTL_CONT_STATUS"].'",
+              "REQ_DTL_CONT_HAZARD": "'.$dtlRec["TL_DTL_CONT_DANGER"].'",
               "REQ_DTL_OWNER_CODE": "'.$dtlRec["TL_DTL_OWNER"].'",
               "REQ_DTL_OWNER_NAME": "'.$dtlRec["TL_DTL_OWNER_NAME"].'"
           },';
@@ -392,12 +393,14 @@ class Store extends BD_Controller {
               "NPWP": "'.$header["TL_CUST_NPWP"].'",
               "RECEIVING_DARI": "'.$header["TL_FROM"].'",
               "TANGGAL_LUNAS": "'.$header["TL_CORRECTION_DATE"].'",
-              "DI": "'.$header["TL_NO"].'"
+              "DI": "'.$header["TL_NO"].'",
+              "PAYMENT_METHOD": "'.$header["TL_PAYMETHOD"].'",
+              "BRANCH_ID": "'.$header["BRANCH_ID"].'"
            },
            "arrdetail": ['.$arrdetilRec.']
             }';
 
-       $inputReceiving = json_encode(json_decode($jsonReceiving));
+       $inputReceiving = json_decode($jsonReceiving, TRUE);
        // End Receiving
 
        // Delivery
@@ -406,13 +409,14 @@ class Store extends BD_Controller {
          $arrdetilDel .= '
          {
               "REQ_DTL_CONT": "'.$dtlDel["TL_DTL_CONT"].'",
-              "REQ_DTL_CONT_STATUS": "'.$dtlDel["TL_DTL_CONT_SIZE"].'",
+              "REQ_DTL_CONT_STATUS": "'.$dtlDel["TL_DTL_CONT_TYPE"].'",
               "REQ_DTL_COMMODITY": "'.$dtlDel["TL_DTL_CMDTY_NAME"].'",
-              "REQ_DTL_VIA": "'.$dtlDel["TL_DTL_DEL_VIA_NAME"].'",
+              "REQ_DTL_VIA_NAME": "'.$dtlDel["TL_DTL_DEL_VIA_NAME"].'",
+              "REQ_DTL_VIA": "'.$dtlDel["TL_DTL_DEL_VIA"].'",
               "REQ_DTL_SIZE": "'.$dtlDel["TL_DTL_CONT_SIZE"].'",
               "REQ_DTL_TYPE": "'.$dtlDel["TL_DTL_CONT_TYPE"].'",
               "REQ_DTL_DEL_DATE": "'.$dtlDel["TL_DTL_DEL_DATE"].'",
-              "REQ_DTL_CONT_HAZARD": "'.$dtlDel["TL_DTL_CONT_STATUS"].'",
+              "REQ_DTL_CONT_HAZARD": "'.$dtlDel["TL_DTL_CONT_DANGER"].'",
               "REQ_DTL_NO_SEAL": ""
           },';
        }
@@ -425,7 +429,7 @@ class Store extends BD_Controller {
           "header":
           {
           "REQ_NO": "'.$header["TL_NO"].'",
-          "REQ_DELIVERY_DATE": "'.$header["TL_CREATE_DATE"].'5",
+          "REQ_DELIVERY_DATE": "'.$header["TL_CREATE_DATE"].'",
           "NO_NOTA": "'.$header["TL_NOTA"].'",
           "TGL_NOTA": "'.$header["TL_DATE"].'",
           "NM_CONSIGNEE": "'.$header["TL_CUST_NAME"].'",
@@ -435,12 +439,14 @@ class Store extends BD_Controller {
           "DELIVERY_KE": "'.$header["TL_TO"].'",
           "TANGGAL_LUNAS": "'.$header["TL_CORRECTION_DATE"].'",
           "PERP_DARI": "",
-          "PERP_KE": ""
+          "PERP_KE": "",
+          "PAYMENT_METHOD": "'.$header["TL_PAYMETHOD"].'",
+          "BRANCH_ID": "'.$header["BRANCH_ID"].'"
           },
           "arrdetail": ['.$arrdetilDel.']
            }';
 
-      $inputDelivery = json_encode(json_decode($jsonDelivery));
+      $inputDelivery = json_decode($jsonDelivery, TRUE);
       // End Delivery
 
       $this->auth_basic();
@@ -763,7 +769,7 @@ class Store extends BD_Controller {
                     '".$REQ_STUFF_DATE."',
                     '".$REQ_DTL_SIZE."',
                     '".$REQ_DTL_TYPE."',
-                    NULL,
+                    'MTY',
                     NULL,
                     NULL,
                     NULL,
@@ -2126,7 +2132,8 @@ class Store extends BD_Controller {
             "CANCELLED_NOREQ_OLD"   => $header["REQ_NO"],
             "CANCELLED_REQ_DATE"    => $header["REQ_RECEIVING_DATE"],
             "CANCELLED_BRANCH_ID"   => $branch,
-            "CANCELLED_NOREQ_NEW"   => ""
+            "CANCELLED_NOREQ_NEW"   => "",
+            "CANCELLED_QTY"         => $header["REQ_DTL_QTY"]
           ];
 
           $det                    = $db->set($storeDetail)->get_compiled_insert('TH_CANCELLED');
