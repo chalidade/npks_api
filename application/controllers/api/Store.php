@@ -101,6 +101,8 @@ class Store extends BD_Controller {
 
       $this->auth_basic();
       //header
+      $devdb               = $this->db;
+      $repodb              = $this->reponpks;
       $header              = $input['header'];
       $branch              = $header["BRANCH_ID"];
       $REQ_NO              = $header['REQ_NO'];
@@ -118,15 +120,15 @@ class Store extends BD_Controller {
       $PERP_KE             = $header['PERP_KE'];
 
 
-      $sqlcek           = $this->reponpks->where('REQ_BRANCH_ID', $branch)->where("REQ_NO", $REQ_NO)->get('TX_REQ_DELIVERY_HDR');
+      $sqlcek           = $repodb->where('REQ_BRANCH_ID', $branch)->where("REQ_NO", $REQ_NO)->get('TX_REQ_DELIVERY_HDR');
       $resultCek        = $sqlcek->result_array();
 
-      $sqlceknpwp       = $this->db->where("CONSIGNEE_NPWP", $NPWP)->select("CONSIGNEE_ID")->get('TM_CONSIGNEE');
+      $sqlceknpwp       = $devdb->where("CONSIGNEE_NPWP", $NPWP)->select("CONSIGNEE_ID")->get('TM_CONSIGNEE');
       $resultCeknpwp    = $sqlceknpwp->result_array();
 
       if (empty($resultCeknpwp)) {
         // If NPWP empty Create New Consigne
-        $qlIDCONSIGNEE      = $this->db->select("SEQ_CONSIGNEE_ID.NEXTVAL AS ID")->get('DUAL');
+        $qlIDCONSIGNEE      = $devdb->select("SEQ_CONSIGNEE_ID.NEXTVAL AS ID")->get('DUAL');
         $resultIDCONSIGNEE  = $qlIDCONSIGNEE->result_array();
         $CONSIGNE_ID        = $resultIDCONSIGNEE[0]['ID'];
         $insertConsignee    = "
@@ -145,7 +147,7 @@ class Store extends BD_Controller {
                                    '" . $NPWP . "'
                                  )
                                  ";
-        $this->db->query($insertConsignee);
+        $devdb->query($insertConsignee);
       } else {
         $CONSIGNE_ID       = $resultCeknpwp[0]['CONSIGNEE_ID'];
       }
@@ -161,7 +163,7 @@ class Store extends BD_Controller {
 
       if (empty($resultCek)) {
         $qlID = "SELECT SEQ_REQ_DELIVERY_HDR.NEXTVAL AS ID FROM DUAL";
-        $resultID = $this->db->query($qlID)->result_array();
+        $resultID = $devdb->query($qlID)->result_array();
         $IDheader = $resultID[0]['ID'];
 
         $query = "
@@ -200,7 +202,7 @@ class Store extends BD_Controller {
             'Y'
           )";
 
-        $insertHDR = $this->reponpks->query($query);
+        $insertHDR = $repodb->query($query);
         $result["SUCCESS"]      = "true";
         $result["MSG"]          = " Success";
         $result["REQ_NO"]       = $input["header"]["REQ_NO"];
@@ -223,12 +225,12 @@ class Store extends BD_Controller {
       if ($insertHDR) {
         foreach ($detail as $val) {
 
-          $sqlcek = $this->reponpks->where('REQ_DTL_CONT', $val['REQ_DTL_CONT'])->where('REQ_HDR_ID', $IDheader)->get('TX_REQ_DELIVERY_DTL');
+          $sqlcek = $repodb->where('REQ_DTL_CONT', $val['REQ_DTL_CONT'])->where('REQ_HDR_ID', $IDheader)->get('TX_REQ_DELIVERY_DTL');
           $resultcekdtl = $sqlcek->result_array();
 
           if (empty($resultcekdtl)) {
             $sqlIDTL = "SELECT SEQ_REQ_DELIVERY_DTL.NEXTVAL AS ID FROM DUAL";
-            $resultIDTL = $this->db->query($sqlIDTL)->result_array();
+            $resultIDTL = $devdb->query($sqlIDTL)->result_array();
             $IDdetail = $resultIDTL[0]['ID'];
 
             $REQ_DTL_CONT               = $val['REQ_DTL_CONT'];
@@ -273,7 +275,7 @@ class Store extends BD_Controller {
                       '" . $REQ_DTL_VIA_ID . "',
                       '" . $REQ_DTL_VIA_NAME . "'
                     )";
-            $resultDtl = $this->reponpks->query($queryDTL);
+            $resultDtl = $repodb->query($queryDTL);
             if ($resultDtl)
             $result["DETAIL"][] = [
               "REQ_DTL_CONT"               => $val['REQ_DTL_CONT'],
@@ -288,20 +290,34 @@ class Store extends BD_Controller {
             ];
 
             if ($PERP_DARI != "") {
+              // Ready For Test Ext Delivery
               echo $a . ", perpanjangan dari  | " . $PERP_DARI . "~" . $REQ_DTL_CONT . " " . date('Y-m-d H:i:s') . "<br>\n";
-              $updateDeliveryTDL = "UPDATE TX_REQ_DELIVERY_DTL SET REQ_DTL_ACTIVE = 'T', REQ_DTL_STATUS = '2' WHERE REQ_HDR_ID = (SELECT REQ_ID FROM TX_REQ_DELIVERY_HDR WHERE REQ_NO = '" . $PERP_DARI . "' AND REQ_BRANCH_ID = " . $branch . ") AND REQ_DTL_CONT = '" . $REQ_DTL_CONT . "'  ";
-              $this->reponpks->query($updateDeliveryTDL);
+              $queryhdr             = $repodb->where("REQ_NO", $PERP_DARI)->where('REQ_BRANCH_ID', $branch)->get('TX_REQ_DELIVERY_HDR');
+              $hdrData              = $queryhdr->result_array();
+              $hdrId                = $hdrData[0]["REQ_ID"];
+              $update               = $repodb->set("REQ_DTL_ACTIVE", "T")
+                                             ->set("REQ_DTL_STATUS", "2")
+                                             ->where('REQ_DTL_CONT', $noContainer)
+                                             ->where('REQ_HDR_ID', $hdrId)
+                                             ->where('REQ_BRANCH_ID', $branch)
+                                             ->update('TX_REQ_DELIVERY_DTL');
+              // Total Detail
+              $listDtl             = $repodb->where('REQ_DTL_CONT', $noContainer)->where('REQ_HDR_ID', $hdrId)->where('REQ_BRANCH_ID', $branch)->get('TX_REQ_DELIVERY_DTL');
+              $listDtl             = $listDtl->result_array();
+              $countDtl            = count($listDtl);
 
-              $cek_tot_dtl = $this->db->query("SELECT COUNT(*) JML FROM TX_REQ_DELIVERY_DTL WHERE REQ_HDR_ID = (SELECT REQ_ID FROM TX_REQ_DELIVERY_HDR WHERE REQ_NO = '" . $PERP_DARI . "' AND REQ_BRANCH_ID = " . $branch . ")")->row()->JML;
-              $cek_tot_dtl_T = $this->reponpks->query("SELECT COUNT(*) JML FROM TX_REQ_DELIVERY_DTL WHERE REQ_HDR_ID = (SELECT REQ_ID FROM TX_REQ_DELIVERY_HDR WHERE REQ_NO = '" . $PERP_DARI . "' AND REQ_BRANCH_ID = " . $branch . ") AND REQ_DTL_ACTIVE = 'T' ")->row()->JML;
+              // Total Detail Tidak Aktif
+              $listDtlT             = $repodb->where('REQ_DTL_CONT', $noContainer)->set("REQ_DTL_ACTIVE", "T")->where('REQ_HDR_ID', $hdrId)->where('REQ_BRANCH_ID', $branch)->get('TX_REQ_DELIVERY_DTL');
+              $listDtlT             = $listDtlT->result_array();
+              $countDtlT            = count($listDtlT);
 
-              if ($cek_tot_dtl == $cek_tot_dtl_T) {
-                $updateStuffHDR = "UPDATE TX_REQ_DELIVERY_HDR SET REQUEST_STATUS = '2' WHERE REQ_NO = '" . $PERP_DARI . "' AND REQ_BRANCH_ID = " . $branch . " ";
-                $this->reponpks->query($updateStuffHDR);
+
+              if ($countDtl == $countDtlT) {
+                $updateDelHdr       = $repodb->set("REQUEST_STATUS", "2")->where("REQ_NO", $PERP_DARI)->where('REQ_BRANCH_ID', $branch)->update('TX_REQ_DELIVERY_HDR');
               }
             }
 
-            $this->db->query("CALL ADD_HISTORY_CONTAINER(
+            $devdb->query("CALL ADD_HISTORY_CONTAINER(
                     '" . $REQ_DTL_CONT . "',
                     '" . $REQ_NO . "',
                     '" . $REQ_DELIVERY_DATE . "',
@@ -1352,7 +1368,7 @@ class Store extends BD_Controller {
                   NULL,
                   NULL,
                   NULL,
-                  4,
+                  15,
                   'Request Fumigasi',
                   NULL,
                   NULL,
@@ -1372,7 +1388,8 @@ class Store extends BD_Controller {
             "FUMI_DTL_START_FUMI_PLAN" => $detail["FUMI_DTL_START_FUMI_PLAN"],
             "FUMI_DTL_END_FUMI_PLAN"   => $detail["FUMI_DTL_END_FUMI_PLAN"],
             "FUMI_DTL_COMMODITY"       => $detail["FUMI_DTL_COMMODITY"],
-            "FUMI_DTL_COUNTER"         => $detail["FUMI_DTL_COUNTER"]
+            "FUMI_DTL_COUNTER"         => $detail["FUMI_DTL_COUNTER"],
+            "FUMI_DTL_TYPE"            => $detail["FUMI_DTL_TYPE"]
           ];
 
           $det                    = $repodb->set($storeDetail)->get_compiled_insert('TX_REQ_FUMI_DTL');
@@ -2106,7 +2123,7 @@ class Store extends BD_Controller {
       }
 
       function getCancelledReq_post($input, $branch,$encode) {
-        $db                         = $this->db;
+        $devdb                      = $this->db;
         $repodb                     = $this->reponpks;
         $header                     = $input["header"];
         $detail                     = $input["arrdetail"];
@@ -2133,10 +2150,10 @@ class Store extends BD_Controller {
             "CANCELLED_REQ_DATE"    => $header["REQ_RECEIVING_DATE"],
             "CANCELLED_BRANCH_ID"   => $branch,
             "CANCELLED_NOREQ_NEW"   => "",
-            "CANCELLED_QTY"         => $header["REQ_DTL_QTY"]
+            "CANCELLED_QTY"         => $detail["REQ_DTL_QTY"]
           ];
 
-          $det                    = $db->set($storeDetail)->get_compiled_insert('TH_CANCELLED');
+          $det                    = $repodb->set($storeDetail)->get_compiled_insert('TH_CANCELLED');
           $queryDtl               = $this->reponpks->query($det);
           $result["MSG"]          = "Success";
           $result["DETAIL"][]     = $storeDetail;
@@ -2191,7 +2208,19 @@ class Store extends BD_Controller {
 
             if($cek_jumlah_out == $cek_jumlah_dtl){
 							$repodb->set('FUMI_STATUS',2)->where('FUMI_ID',$hdrId)->update('TX_REQ_FUMI_HDR');
-						}
+						} else if($header["CANCELLED_STATUS"] == 22) {
+              // Batal Plugging
+              $queryhdr             = $repodb->where("PLUG_NO", $header["REQ_NO"])->get('TX_REQ_PLUG_HDR');
+              $hdrData              = $queryhdr->result_array();
+              $hdrId                = $hdrData[0]["PLUG_ID"];
+              $update               = $repodb->set("PLUG_DTL_ACTIVE", "T")->set("PLUG_DTL_CANCELLED", "Y")->set("PLUG_DTL_STATUS", "2")->where('PLUG_DTL_CONT', $noContainer)->where('PLUG_DTL_HDR_ID', $hdrId)->update('TX_REQ_PLUG_DTL');
+
+              $cek_jumlah_dtl       = $repodb->where('PLUG_DTL_HDR_ID',$hdrId)->from('TX_REQ_PLUG_DTL')->count_all_results();
+  						$cek_jumlah_out       = $repodb->where('PLUG_DTL_HDR_ID',$hdrId)->where('PLUG_DTL_ACTIVE','T')->from('TX_REQ_PLUG_DTL')->count_all_results();
+
+              if($cek_jumlah_out == $cek_jumlah_dtl){
+  							$repodb->set('PLUG_STATUS',2)->where('PLUG_ID',$hdrId)->update('TX_REQ_PLUG_HDR');
+  						}
           }
 
           // REFF_NAME
@@ -2221,7 +2250,6 @@ class Store extends BD_Controller {
                 '',
                 NULL)");
 
-        } else {
           $storeDetail            = [
             "CANCELLED_NOREQ"       => $header["REQ_NO"],
             "CANCELLED_NO_CONT"     => $noContainer,
@@ -2235,9 +2263,25 @@ class Store extends BD_Controller {
             "CANCELLED_NOREQ_NEW"   => ""
           ];
 
-          $result["MSG"]          = "Already Exist";
+          $result["MSG"]          = "Success Cancel";
           $result["DETAIL"][]     = $storeDetail;
-          }
+        } } else {
+        $storeDetail            = [
+          "CANCELLED_NOREQ"       => $header["REQ_NO"],
+          "CANCELLED_NO_CONT"     => $noContainer,
+          "CANCELLED_CREATE_DATE" => "",
+          "CANCELLED_CREATE_BY"   => "",
+          "CANCELLED_MARK"        => $header["REQ_MARK"],
+          "CANCELLED_STATUS"      => "",
+          "CANCELLED_NOREQ_OLD"   => "",
+          "CANCELLED_REQ_DATE"    => $header["REQ_RECEIVING_DATE"],
+          "CANCELLED_BRANCH_ID"   => $branch,
+          "CANCELLED_NOREQ_NEW"   => ""
+        ];
+
+        $result["MSG"]          = "Already Exist";
+        $result["DETAIL"][]     = $storeDetail;
+        }
         }
 
           if ($encode == "true") {
@@ -2247,6 +2291,5 @@ class Store extends BD_Controller {
             echo json_encode($result);
           }
       }
-
-}
+    }
 ?>
