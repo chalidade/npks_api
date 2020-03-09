@@ -244,6 +244,7 @@ class Store extends BD_Controller {
             $REQ_DTL_CONT_HAZARD        = $val['REQ_DTL_CONT_HAZARD'];
             $REQ_DTL_NO_SEAL            = $val['REQ_DTL_NO_SEAL'];
 
+            if (isset($val["REQ_DTL_TL"])) {
             $queryDTL = "
                     INSERT INTO TX_REQ_DELIVERY_DTL
                     (
@@ -258,7 +259,8 @@ class Store extends BD_Controller {
                       REQ_DTL_DEL_DATE,
                       REQ_DTL_NO_SEAL,
                       REQ_DTL_VIA_ID,
-                      REQ_DTL_VIA
+                      REQ_DTL_VIA,
+                      REQ_DTL_TL
                     )
                     VALUES
                     (
@@ -273,8 +275,43 @@ class Store extends BD_Controller {
                       TO_DATE('" . $REQ_DTL_DEL_DATE . "','MM/DD/YYYY HH24:MI:SS'),
                       '" . $REQ_DTL_NO_SEAL . "',
                       '" . $REQ_DTL_VIA_ID . "',
-                      '" . $REQ_DTL_VIA_NAME . "'
+                      '" . $REQ_DTL_VIA_NAME . "',
+                      '" . $val["REQ_DTL_TL"] . "'
+
                     )";
+            } else {
+              $queryDTL = "
+                      INSERT INTO TX_REQ_DELIVERY_DTL
+                      (
+                        REQ_DTL_ID,
+                        REQ_HDR_ID,
+                        REQ_DTL_CONT,
+                        REQ_DTL_CONT_STATUS,
+                        REQ_DTL_CONT_HAZARD,
+                        REQ_DTL_CONT_SIZE,
+                        REQ_DTL_CONT_TYPE,
+                        REQ_DTL_COMMODITY,
+                        REQ_DTL_DEL_DATE,
+                        REQ_DTL_NO_SEAL,
+                        REQ_DTL_VIA_ID,
+                        REQ_DTL_VIA
+                      )
+                      VALUES
+                      (
+                        " . $IDdetail . ",
+                        " . $IDheader . ",
+                        '" . $REQ_DTL_CONT . "',
+                        '" . $REQ_DTL_CONT_STATUS . "',
+                        '" . $REQ_DTL_CONT_HAZARD . "',
+                        '" . $REQ_DTL_SIZE . "',
+                        '" . $REQ_DTL_TYPE . "',
+                        '" . $REQ_DTL_COMMODITY . "',
+                        TO_DATE('" . $REQ_DTL_DEL_DATE . "','MM/DD/YYYY HH24:MI:SS'),
+                        '" . $REQ_DTL_NO_SEAL . "',
+                        '" . $REQ_DTL_VIA_ID . "',
+                        '" . $REQ_DTL_VIA_NAME . "'
+                      )";
+            }
             $resultDtl = $repodb->query($queryDTL);
             if ($resultDtl)
             $result["DETAIL"][] = [
@@ -389,7 +426,8 @@ class Store extends BD_Controller {
               "REQ_DTL_TYPE": "'.$dtlRec["TL_DTL_CONT_TYPE"].'",
               "REQ_DTL_CONT_HAZARD": "'.$dtlRec["TL_DTL_CONT_DANGER"].'",
               "REQ_DTL_OWNER_CODE": "'.$dtlRec["TL_DTL_OWNER"].'",
-              "REQ_DTL_OWNER_NAME": "'.$dtlRec["TL_DTL_OWNER_NAME"].'"
+              "REQ_DTL_OWNER_NAME": "'.$dtlRec["TL_DTL_OWNER_NAME"].'",
+              "REQ_DTL_TL": "Y"
           },';
         }
 
@@ -433,7 +471,8 @@ class Store extends BD_Controller {
               "REQ_DTL_TYPE": "'.$dtlDel["TL_DTL_CONT_TYPE"].'",
               "REQ_DTL_DEL_DATE": "'.$dtlDel["TL_DTL_DEL_DATE"].'",
               "REQ_DTL_CONT_HAZARD": "'.$dtlDel["TL_DTL_CONT_DANGER"].'",
-              "REQ_DTL_NO_SEAL": ""
+              "REQ_DTL_NO_SEAL": "",
+              "REQ_DTL_TL": "Y"
           },';
        }
 
@@ -1713,7 +1752,8 @@ class Store extends BD_Controller {
           $resultID = $this->db->query($qlID)->result_array();
           $IDheader = $resultID[0]['ID'];
 
-          $query = "INSERT INTO TX_REQ_RECEIVING_HDR
+          $query = "
+          INSERT INTO TX_REQ_RECEIVING_HDR
           (
           REQUEST_ID,
           REQUEST_NO,
@@ -1785,37 +1825,90 @@ class Store extends BD_Controller {
               $REQ_DTL_CONT_HAZARD    = $val['REQ_DTL_CONT_HAZARD'];
               $REQUEST_DTL_OWNER_CODE = $val['REQ_DTL_OWNER_CODE'];
               $REQ_DTL_OWNER_NAME     = $val['REQ_DTL_OWNER_NAME'];
+              $REQ_DTL_VESSEL_NAME    = $val['REQ_DTL_VESSEL_NAME'];
+              $REQ_DTL_VESSEL_CODE    = $val['REQ_DTL_VESSEL_CODE'];
+              $REQ_DTL_VOY            = $val['REC_DTL_VOYIN']." / ".$val['REC_DTL_VOYOUT'];
 
-              $queryDTL = "INSERT INTO TX_REQ_RECEIVING_DTL
-              (
-              REQUEST_DTL_ID,
-              REQUEST_HDR_ID,
-              REQUEST_DTL_CONT,
-              REQUEST_DTL_CONT_STATUS,
-              REQUEST_DTL_DANGER,
-              REQUEST_DTL_CONT_SIZE,
-              REQUEST_DTL_CONT_TYPE,
-              REQUEST_DTL_COMMODITY,
-              REQUEST_DTL_OWNER_CODE,
-              REQUEST_DTL_OWNER_NAME,
-              REQUEST_DTL_VIA,
-              REQUEST_DTL_VIA_ID
-              )
-              VALUES
-              (
-              " . $IDdetail . ",
-              " . $IDheader . ",
-              '" . $REQ_DTL_CONT . "',
-              '" . $REQ_DTL_CONT_STATUS . "',
-              '" . $REQ_DTL_CONT_HAZARD . "',
-              '" . $REQ_DTL_SIZE . "',
-              '" . $REQ_DTL_TYPE . "',
-              '" . $REQ_DTL_COMMODITY . "',
-              '" . $REQUEST_DTL_OWNER_CODE . "',
-              '" . $REQ_DTL_OWNER_NAME . "',
-              '" . $REQ_DTL_VIA_NAME . "',
-              '" . $REQ_DTL_VIA_ID . "'
-              )";
+              if (isset($val["REQ_DTL_TL"])) {
+                $queryDTL = "
+                INSERT INTO TX_REQ_RECEIVING_DTL
+                (
+                REQUEST_DTL_ID,
+                REQUEST_HDR_ID,
+                REQUEST_DTL_CONT,
+                REQUEST_DTL_CONT_STATUS,
+                REQUEST_DTL_DANGER,
+                REQUEST_DTL_CONT_SIZE,
+                REQUEST_DTL_CONT_TYPE,
+                REQUEST_DTL_COMMODITY,
+                REQUEST_DTL_OWNER_CODE,
+                REQUEST_DTL_OWNER_NAME,
+                REQUEST_DTL_VIA,
+                REQUEST_DTL_VIA_ID,
+                REQUEST_DTL_TL,
+                REQUEST_DTL_VESSEL_NAME,
+                REQUEST_DTL__VESSEL_CODE,
+                REQUEST_DTL_VOY
+                )
+                VALUES
+                (
+                " . $IDdetail . ",
+                " . $IDheader . ",
+                '" . $REQ_DTL_CONT . "',
+                '" . $REQ_DTL_CONT_STATUS . "',
+                '" . $REQ_DTL_CONT_HAZARD . "',
+                '" . $REQ_DTL_SIZE . "',
+                '" . $REQ_DTL_TYPE . "',
+                '" . $REQ_DTL_COMMODITY . "',
+                '" . $REQUEST_DTL_OWNER_CODE . "',
+                '" . $REQ_DTL_OWNER_NAME . "',
+                '" . $REQ_DTL_VIA_NAME . "',
+                '" . $REQ_DTL_VIA_ID . "',
+                '" . $val["REQ_DTL_TL"] . "',
+                '" . $REQ_DTL_VESSEL_NAME . "',
+                '" . $REQ_DTL_VESSEL_CODE . "',
+                '" . $REQ_DTL_VOY . "'
+                )";
+              } else {
+                $queryDTL = "
+                INSERT INTO TX_REQ_RECEIVING_DTL
+                (
+                REQUEST_DTL_ID,
+                REQUEST_HDR_ID,
+                REQUEST_DTL_CONT,
+                REQUEST_DTL_CONT_STATUS,
+                REQUEST_DTL_DANGER,
+                REQUEST_DTL_CONT_SIZE,
+                REQUEST_DTL_CONT_TYPE,
+                REQUEST_DTL_COMMODITY,
+                REQUEST_DTL_OWNER_CODE,
+                REQUEST_DTL_OWNER_NAME,
+                REQUEST_DTL_VIA,
+                REQUEST_DTL_VIA_ID,
+                REQUEST_DTL_VESSEL_NAME,
+                REQUEST_DTL__VESSEL_CODE,
+                REQUEST_DTL_VOY
+                )
+                VALUES
+                (
+                " . $IDdetail . ",
+                " . $IDheader . ",
+                '" . $REQ_DTL_CONT . "',
+                '" . $REQ_DTL_CONT_STATUS . "',
+                '" . $REQ_DTL_CONT_HAZARD . "',
+                '" . $REQ_DTL_SIZE . "',
+                '" . $REQ_DTL_TYPE . "',
+                '" . $REQ_DTL_COMMODITY . "',
+                '" . $REQUEST_DTL_OWNER_CODE . "',
+                '" . $REQ_DTL_OWNER_NAME . "',
+                '" . $REQ_DTL_VIA_NAME . "',
+                '" . $REQ_DTL_VIA_ID . "',
+                '" . $REQ_DTL_VESSEL_NAME . "',
+                '" . $REQ_DTL_VESSEL_CODE . "',
+                '" . $REQ_DTL_VOY . "'
+                )";
+              }
+
               $resultDtl = $this->reponpks->query($queryDTL);
               if ($resultDtl) {
                 $result["DETAIL"][] = ["REQ_DTL_CONT" => $val["REQ_DTL_CONT"], "REQ_DTL_OWNER_NAME" => $val["REQ_DTL_OWNER_NAME"]];
@@ -2254,7 +2347,6 @@ class Store extends BD_Controller {
             $queryQtyReq          = $repodb->where('REQUEST_HDR_ID', $hdrId)->where('REQUEST_DTL_SI', $noContainer)->get("TX_REQ_DELIVERY_BRG_DTL");
             $arrReq               = $queryQtyReq->result_array();
             $qtyAwal              = $arrReq[0]["REQUEST_DTL_TOTAL"];
-
             $totalQty             = $qtyAwal - $detail["REQ_DTL_QTY"];
 
             if ($totalQty > 0) {
@@ -2276,27 +2368,51 @@ class Store extends BD_Controller {
           $reffData               = $tmReff->result_array();
           $reffName               = $reffData[0]["REFF_NAME"];
 
-          //insert history container
-          $devdb->query("
-                CALL ADD_HISTORY_CONTAINER(
-                '".$noContainer."',
-                '".$header["REQ_NO"]."',
-                '".$header["REQ_RECEIVING_DATE"]."',
-                '',
-                '',
-                NULL,
-                NULL,
-                NULL,
-                NULL,
-                NULL,
-                NULL,
-                ".$header["CANCELLED_STATUS"].",
-                '".$reffName."',
-                NULL,
-                NULL,
-                4,
-                '',
-                NULL)");
+
+          if ($header["CANCELLED_STATUS"] == 21 || $header["CANCELLED_STATUS"] == 22) {
+            $storeHistory  = [
+              "HIST_SI"         => $noContainer,
+              "HIST_BRANCH_ID"  => $branch,
+              "HIST_COUNTER"    => "",
+              "HIST_STORAGE"    => "",
+              "HIST_ACTIVITY_ID"=> $header["CANCELLED_STATUS"],
+              "HIST_ACTIVITY"   => $reffName,
+              "HIST_DATE"       => "",
+              "HIST_NOREQ"      => $header["REQ_NO"],
+              "HIST_DATE_REQ"   => "",
+              "HIST_TOTAL"      => $totalQty,
+              "HIST_IN"         => "",
+              "HIST_OUT"        => "",
+              "HIST_USER"       => "",
+              "HIST_TIMESTAMP"  => null
+            ];
+
+            $historyBrg               = $devdb->set($storeHistory)->get_compiled_insert('TH_HISTORY_BRG');
+            $queryHistory             = $devdb->query($historyBrg);
+
+          } else {
+            //insert history container
+            $devdb->query("
+                  CALL ADD_HISTORY_CONTAINER(
+                  '".$noContainer."',
+                  '".$header["REQ_NO"]."',
+                  '".$header["REQ_RECEIVING_DATE"]."',
+                  '',
+                  '',
+                  NULL,
+                  NULL,
+                  NULL,
+                  NULL,
+                  NULL,
+                  NULL,
+                  ".$header["CANCELLED_STATUS"].",
+                  '".$reffName."',
+                  NULL,
+                  NULL,
+                  4,
+                  '',
+                  NULL)");
+          }
 
           $storeDetail            = [
             "CANCELLED_NOREQ"       => $header["REQ_NO"],
