@@ -643,5 +643,29 @@ class View extends BD_Controller {
         echo json_encode($out);
       }
     }
+
+    function trackAndTraceBrg_post($input,$branch, $encode) {
+      header('Content-Type: application/json');
+      $this->auth_basic();
+      $devdb                = $this->db;
+      $data                 = $input["data"];
+      $all                  = [];
+
+      foreach ($data as $data) {
+        $sqlHistory           = $devdb->where("HIST_SI",$data["NO_SI"])->where('HIST_BRANCH_ID', $data["BRANCH_ID"])->get("TH_HISTORY_BRG");
+        $resultservices       = $sqlHistory->result_array();
+        $all[] = $resultservices;
+      }
+
+      $out["count"]   = count($all);
+      $out["result"]  = $all;
+
+      if ($encode == "true") {
+        $result["result"] = base64_encode(json_encode($out));
+        echo json_encode($result);
+      } else {
+        echo json_encode($out);
+      }
+    }
 }
 ?>
