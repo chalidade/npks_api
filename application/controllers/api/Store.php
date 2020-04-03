@@ -2445,6 +2445,32 @@ class Store extends BD_Controller {
             if($cek_jumlah_out == $cek_jumlah_dtl){
 							$repodb->set('REQUEST_STATUS',2)->where('REQUEST_HDR_ID',$hdrId)->update('TX_REQ_DELIVERY_HDR');
 						}
+          }  else if($header["CANCELLED_STATUS"] == 25) {
+            // Batal Striping
+            $queryhdr               = $repodb->where("STRIP_NO", $header["REQ_NO"])->get('TX_REQ_STRIP_HDR');
+            $hdrData                = $queryhdr->result_array();
+            $hdrId                  = $hdrData[0]["STRIP_ID"];
+            $update                 = $repodb->set("STRIP_DTL_ACTIVE", "T")->set("STRIP_DTL_CANCELLED", "Y")->set("STRIP_DTL_STATUS", "2")->where('STRIP_DTL_CONT', $noContainer)->where('STRIP_DTL_HDR_ID', $hdrId)->update('TX_REQ_STRIP_DTL');
+
+            $cek_jumlah_dtl         = $repodb->where('STRIP_DTL_HDR_ID',$hdrId)->from('TX_REQ_STRIP_DTL')->count_all_results();
+						$cek_jumlah_out         = $repodb->where('STRIP_DTL_HDR_ID',$hdrId)->where('STRIP_DTL_ACTIVE','T')->from('TX_REQ_STRIP_DTL')->count_all_results();
+
+            if($cek_jumlah_out == $cek_jumlah_dtl){
+							$repodb->set('STRIP_STATUS',2)->where('STRIP_ID',$hdrId)->update('TX_REQ_STRIP_HDR');
+						}
+
+            // Batal Receiving
+            $queryhdr               = $repodb->where("REQUEST_NO", $header["REQ_NO"])->get('TX_REQ_RECEIVING_HDR');
+            $hdrData                = $queryhdr->result_array();
+            $hdrId                  = $hdrData[0]["REQUEST_ID"];
+            $update                 = $repodb->set("REQUEST_DTL_CANCELLED", "Y")->where('REQUEST_DTL_CONT', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_RECEIVING_DTL');
+
+            $cek_jumlah_dtl         = $repodb->where('REQUEST_HDR_ID',$hdrId)->from('TX_REQ_DELIVERY_DTL')->count_all_results();
+						$cek_jumlah_out         = $repodb->where('REQUEST_HDR_ID',$hdrId)->where('REQUEST_DTL_CANCELLED','Y')->from('TX_REQ_DELIVERY_DTL')->count_all_results();
+
+            if($cek_jumlah_out == $cek_jumlah_dtl){
+							$repodb->set('REQUEST_STATUS',2)->where('REQUEST_HDR_ID',$hdrId)->update('TX_REQ_DELIVERY_HDR');
+						}
           }
 
           // REFF_NAME
