@@ -418,6 +418,11 @@ class Store extends BD_Controller {
           $dtlRec = (array)$dtlRec;
           $arrdetilRec .= '{
               "REQ_DTL_CONT": "'.$dtlRec["TL_DTL_CONT"].'",
+              "REQ_DTL_VESSEL_NAME" : "'.$header["TL_VESSEL_NAME"].'",
+              "REQ_DTL_VESSEL_CODE" : "'.$header["TL_VESSEL_CODE"].'",
+              "REQ_DTL_VOYIN" : "'.$header["TL_VOYIN"].'",
+              "REQ_DTL_VOYOUT" : "'.$header["TL_VOYOUT"].'",
+              "REQ_DTL_VIA_ID" : "'.$dtlRec["TL_DTL_REC_VIA"].'",
               "REQ_DTL_CONT_STATUS": "'.$dtlRec["TL_DTL_CONT_TYPE"].'",
               "REQ_DTL_COMMODITY": "'.$dtlRec["TL_DTL_CMDTY_NAME"].'",
               "REQ_DTL_VIA_NAME": "'.$dtlRec["TL_DTL_VIA_REC_NAME"].'",
@@ -438,6 +443,7 @@ class Store extends BD_Controller {
            "action" : "getReceiving",
            "header": {
               "REQ_NO": "'.$header["TL_NO"].'",
+              "TL" : "true",
               "REQ_RECEIVING_DATE": "'.$header["TL_CREATE_DATE"].'",
               "NO_NOTA": "'.$header["TL_NOTA"].'",
               "TGL_NOTA": "'.$header["TL_DATE"].'",
@@ -464,6 +470,11 @@ class Store extends BD_Controller {
          {
               "REQ_DTL_CONT": "'.$dtlDel["TL_DTL_CONT"].'",
               "REQ_DTL_CONT_STATUS": "'.$dtlDel["TL_DTL_CONT_TYPE"].'",
+              "REQ_DTL_VESSEL_NAME" : "'.$header["TL_VESSEL_NAME"].'",
+              "REQ_DTL_VESSEL_CODE" : "'.$header["TL_VESSEL_CODE"].'",
+              "REQ_DTL_VOYIN" : "'.$header["TL_VOYIN"].'",
+              "REQ_DTL_VOYOUT" : "'.$header["TL_VOYOUT"].'",
+              "REQ_DTL_VIA_ID" : "'.$dtlDel["TL_DTL_DEL_VIA"].'",
               "REQ_DTL_COMMODITY": "'.$dtlDel["TL_DTL_CMDTY_NAME"].'",
               "REQ_DTL_VIA_NAME": "'.$dtlDel["TL_DTL_DEL_VIA_NAME"].'",
               "REQ_DTL_VIA": "'.$dtlDel["TL_DTL_DEL_VIA"].'",
@@ -484,6 +495,7 @@ class Store extends BD_Controller {
           "header":
           {
           "REQ_NO": "'.$header["TL_NO"].'",
+          "TL" : "true",
           "REQ_DELIVERY_DATE": "'.$header["TL_CREATE_DATE"].'",
           "NO_NOTA": "'.$header["TL_NOTA"].'",
           "TGL_NOTA": "'.$header["TL_DATE"].'",
@@ -505,8 +517,20 @@ class Store extends BD_Controller {
       // End Delivery
 
       $this->auth_basic();
-      $this->getReceiving_post($inputReceiving, $branch, $encode);
-      $this->getDelivery_post($inputDelivery, $branch, $encode);
+      $realRec = $this->getReceiving_post($inputReceiving, $branch, $encode);
+      $realDel = $this->getDelivery_post($inputDelivery, $branch, $encode);
+
+      $result["realRec"] = $realRec;
+      $result["realDel"] = $realDel;
+
+      // JSON Response
+      header('Content-Type: application/json');
+      if ($encode == "true") {
+        $out["result"] = base64_encode(json_encode($result));
+        echo json_encode($out);
+      } else {
+        echo json_encode($result);
+      }
     }
 
     function getStuffing_post($input, $branch, $encode) {
@@ -2361,6 +2385,26 @@ class Store extends BD_Controller {
             if($cek_jumlah_out == $cek_jumlah_dtl){
               $repodb->set('REQUEST_STATUS',2)->where('REQUEST_ID',$hdrId)->update('TX_REQ_DELIVERY_BRG_HDR');
             }
+          } else if($header["CANCELLED_STATUS"] == 23) {
+            // Batal Stuffing
+            $queryhdr               = $repodb->where("STUFF_NO", $header["REQ_NO"])->get('TX_REQ_STUFF_HDR');
+            $hdrData                = $queryhdr->result_array();
+            $hdrId                  = $hdrData[0]["STUFF_ID"];
+            $update                 = $repodb->set("STUFF_DTL_ACTIVE", "T")->set("STUFF_DTL_CANCELLED", "Y")->set("STUFF_DTL_STATUS", "2")->where('STUFF_DTL_CONT', $noContainer)->where('STUFF_DTL_HDR_ID', $hdrId)->update('TX_REQ_STUFF_DTL');
+
+            $cek_jumlah_dtl         = $repodb->where('STUFF_DTL_HDR_ID',$hdrId)->from('TX_REQ_STUFF_DTL')->count_all_results();
+						$cek_jumlah_out         = $repodb->where('STUFF_DTL_HDR_ID',$hdrId)->where('STUFF_DTL_ACTIVE','T')->from('TX_REQ_STUFF_DTL')->count_all_results();
+
+            if($cek_jumlah_out == $cek_jumlah_dtl){
+							$repodb->set('STUFF_STATUS',2)->where('STUFF_ID',$hdrId)->update('TX_REQ_STUFF_HDR');
+						}
+
+            // Batal Receiving
+            $queryhdr               = $repodb->where("REQUEST_NO", $header["REQ_NO"])->get('TX_REQ_RECEIVING_HDR');
+            $hdrData                = $queryhdr->result_array();
+            $hdrId                  = $hdrData[0]["REQUEST_ID"];
+            $update                 = $repodb->set("REQUEST_DTL_CANCELLED", "Y")->where('REQUEST_DTL_CONT', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_RECEIVING_DTL');
+
           }
 
           // REFF_NAME

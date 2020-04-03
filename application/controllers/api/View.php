@@ -142,11 +142,40 @@ class View extends BD_Controller {
       $out["count"]   = count($newdt);
       $out["result"]  = $newdt;
 
-      if ($encode == "true") {
-        $result["result"] = base64_encode(json_encode($out));
-        echo json_encode($result);
+      if ($input["action"] == "generateTL") {
+        return $out;
       } else {
+        if ($encode == "true") {
+          $result["result"] = base64_encode(json_encode($out));
+          echo json_encode($result);
+        } else {
+          echo json_encode($out);
+        }
+      }
+    }
+
+    function generateTL_post($input, $branch, $encode) {
+      $gateIn   = $this->generateGetIn_post($input, $branch, $encode);
+      $gateOut  = $this->generateGetOut_post($input, $branch, $encode);
+
+      $result["count"]   = $gateIn["count"] + $gateOut["count"];
+
+      $result["result"] = [];
+
+      foreach ($gateIn["result"] as $data) {
+        $result["result"][] = $data;
+      }
+
+      foreach ($gateOut["result"] as $data) {
+        $result["result"][] = $data;
+      }
+
+      header('Content-Type: application/json');
+      if ($encode == "true") {
+        $out["result"] = base64_encode(json_encode($result));
         echo json_encode($out);
+      } else {
+        echo json_encode($result);
       }
     }
 
@@ -371,6 +400,9 @@ class View extends BD_Controller {
       $out["count"]   = count($newdt);
       $out["result"]  = $newdt;
 
+      if ($input["action"] == "generateTL") {
+        return $out;
+      } else {
       if ($encode == "true") {
         $result["result"] = base64_encode(json_encode($out));
         echo json_encode($result);
@@ -378,6 +410,7 @@ class View extends BD_Controller {
         echo json_encode($out);
       }
     }
+  }
 
     function generateRealStuffing_post($input, $branch, $encode) {
       // Initialization
@@ -527,7 +560,8 @@ class View extends BD_Controller {
                                              ->where("REAL_PLUG_NOREQ",$dataStart["NO_REQUEST"])
                                              ->where("REAL_PLUG_BRANCH_ID",$dataStart["BRANCH_ID"])
                                              ->where("REAL_PLUG_STATUS",1)
-                                             ->select("TX_REAL_PLUG.*, REAL_PLUG_NOREQ as NO_REQUEST, REAL_PLUG_CONT as NO_CONTAINER,REAL_PLUG_STATUS as STATUS,TO_CHAR(REAL_PLUG_DATE,'YYYY-MM-DD HH24:MI:SS') as REAL_PLUG,REAL_PLUG_BRANCH_ID")
+                                             ->join('TX_REQ_PLUG_DTL B', 'B.PLUG_DTL_CONT = TX_REAL_PLUG.REAL_PLUG_CONT')
+                                             ->select("TX_REAL_PLUG.*, REAL_PLUG_NOREQ as NO_REQUEST, REAL_PLUG_CONT as NO_CONTAINER,B.PLUG_DTL_CONT_STATUS as STATUS,TO_CHAR(REAL_PLUG_DATE,'YYYY-MM-DD HH24:MI:SS') as REAL_PLUG,REAL_PLUG_BRANCH_ID")
                                              ->get("TX_REAL_PLUG");
 
         $resultservicesStart        = $sqlfumiStart->result_array();
@@ -545,7 +579,8 @@ class View extends BD_Controller {
                                              ->where("REAL_PLUG_NOREQ",$dataFinish["NO_REQUEST"])
                                              ->where("REAL_PLUG_BRANCH_ID",$dataFinish["BRANCH_ID"])
                                              ->where("REAL_PLUG_STATUS",2)
-                                             ->select("TX_REAL_PLUG.*,TO_CHAR(REAL_PLUG_DATE,'YYYY-MM-DD HH24:MI:SS') as REAL_PLUG, REAL_PLUG_NOREQ as NO_REQUEST,REAL_PLUG_CONT as NO_CONTAINER,REAL_PLUG_STATUS as STATUS,REAL_PLUG_BRANCH_ID")
+                                             ->join('TX_REQ_PLUG_DTL B', 'B.PLUG_DTL_CONT = TX_REAL_PLUG.REAL_PLUG_CONT')
+                                             ->select("TX_REAL_PLUG.*,TO_CHAR(REAL_PLUG_DATE,'YYYY-MM-DD HH24:MI:SS') as REAL_PLUG,B.PLUG_DTL_CONT_STATUS as STATUS, REAL_PLUG_NOREQ as NO_REQUEST,REAL_PLUG_CONT as NO_CONTAINER, REAL_PLUG_BRANCH_ID")
                                              ->order_by("REAL_PLUG_DATE", "ASC")
                                              ->get("TX_REAL_PLUG");
 
