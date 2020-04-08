@@ -334,17 +334,17 @@ class Store extends BD_Controller {
               $hdrId                = $hdrData[0]["REQ_ID"];
               $update               = $repodb->set("REQ_DTL_ACTIVE", "T")
                                              ->set("REQ_DTL_STATUS", "2")
-                                             ->where('REQ_DTL_CONT', $noContainer)
+                                             ->where('REQ_DTL_CONT', $REQ_DTL_CONT)
                                              ->where('REQ_HDR_ID', $hdrId)
                                              ->where('REQ_BRANCH_ID', $branch)
                                              ->update('TX_REQ_DELIVERY_DTL');
               // Total Detail
-              $listDtl             = $repodb->where('REQ_DTL_CONT', $noContainer)->where('REQ_HDR_ID', $hdrId)->where('REQ_BRANCH_ID', $branch)->get('TX_REQ_DELIVERY_DTL');
+              $listDtl             = $repodb->where('REQ_HDR_ID', $hdrId)->where('REQ_BRANCH_ID', $branch)->get('TX_REQ_DELIVERY_DTL');
               $listDtl             = $listDtl->result_array();
               $countDtl            = count($listDtl);
 
               // Total Detail Tidak Aktif
-              $listDtlT             = $repodb->where('REQ_DTL_CONT', $noContainer)->set("REQ_DTL_ACTIVE", "T")->where('REQ_HDR_ID', $hdrId)->where('REQ_BRANCH_ID', $branch)->get('TX_REQ_DELIVERY_DTL');
+              $listDtlT             = $repodb->set("REQ_DTL_ACTIVE", "T")->where('REQ_HDR_ID', $hdrId)->where('REQ_BRANCH_ID', $branch)->get('TX_REQ_DELIVERY_DTL');
               $listDtlT             = $listDtlT->result_array();
               $countDtlT            = count($listDtlT);
 
@@ -1581,7 +1581,33 @@ class Store extends BD_Controller {
           $det                    = $db->set($storeDetail)->get_compiled_insert('TX_REQ_RECEIVING_BRG_DTL');
           $queryDtl               = $this->reponpks->query($det);
           $result["DETAIL"][]     = $storeDetail;
-          }
+
+          // REFF_NAME
+          $tmReff                 = $repodb->where("REFF_ID", "1")->where('REFF_TR_ID', '5')->get('TM_REFF');
+          $reffData               = $tmReff->result_array();
+          $reffName               = $reffData[0]["REFF_NAME"];
+
+
+          // TX_HISTORY_BARANG
+          $storeHistory  = [
+            "HIST_SI"         => $detail["REQUEST_DTL_SI"],
+            "HIST_BRANCH_ID"  => $branch,
+            "HIST_COUNTER"    => "",
+            "HIST_STORAGE"    => $detail["REQUEST_DTL_TOTAL"],
+            "HIST_ACTIVITY_ID"=> "1",
+            "HIST_ACTIVITY"   => $reffName,
+            "HIST_DATE"       => date('d-M-Y', strtotime($header["REQUEST_CREATE_DATE"])),
+            "HIST_NOREQ"      => $header["REQ_NO"],
+            "HIST_DATE_REQ"   => date('d-M-Y', strtotime($header["REQUEST_RECEIVING_DATE"])),
+            "HIST_TOTAL"      => $detail["REQUEST_DTL_TOTAL"],
+            "HIST_IN"         => $detail["REQUEST_DTL_TOTAL"],
+            "HIST_OUT"        => "",
+            "HIST_USER"       => ""
+          ];
+
+          $historyBrg               = $devdb->set($storeHistory)->get_compiled_insert('TH_HISTORY_BRG');
+          $queryHistory             = $devdb->query($historyBrg);
+        }
       }
 
       // JSON Response
@@ -1610,7 +1636,6 @@ class Store extends BD_Controller {
         $result["REQ_NO"]         = $resultQuery[0]["REQUEST_NO"];
         $result["NM_CONSIGNEE"]   = $resultQuery[0]["REQUEST_CONSIGNEE_ID"];
         $result["STATUS"]         = $resultQuery[0]["REQUEST_STATUS"];
-
 
         $queryDTL                 = $repodb->where("REQUEST_HDR_ID", $resultQuery[0]["REQUEST_ID"])->get('TX_REQ_DELIVERY_BRG_DTL');
         $resultDTLQuery           = $queryDTL->result_array();
@@ -1702,6 +1727,32 @@ class Store extends BD_Controller {
           $det                    = $db->set($storeDetail)->get_compiled_insert('TX_REQ_DELIVERY_BRG_DTL');
           $queryDtl               = $this->reponpks->query($det);
           $result["DETAIL"][]     = $storeDetail;
+
+          // REFF_NAME
+          $tmReff                 = $repodb->where("REFF_ID", "2")->where('REFF_TR_ID', '5')->get('TM_REFF');
+          $reffData               = $tmReff->result_array();
+          $reffName               = $reffData[0]["REFF_NAME"];
+
+
+          // TX_HISTORY_BARANG
+          $storeHistory  = [
+            "HIST_SI"         => $detail["REQUEST_DTL_SI"],
+            "HIST_BRANCH_ID"  => $branch,
+            "HIST_COUNTER"    => "",
+            "HIST_STORAGE"    => $detail["REQUEST_DTL_TOTAL"],
+            "HIST_ACTIVITY_ID"=> "2",
+            "HIST_ACTIVITY"   => $reffName,
+            "HIST_DATE"       => date('d-M-Y', strtotime($header["REQUEST_CREATE_DATE"])),
+            "HIST_NOREQ"      => $header["REQ_NO"],
+            "HIST_DATE_REQ"   => date('d-M-Y', strtotime($header["REQUEST_RECEIVING_DATE"])),
+            "HIST_TOTAL"      => "",
+            "HIST_IN"         => "",
+            "HIST_OUT"        => $detail["REQUEST_DTL_TOTAL"],
+            "HIST_USER"       => ""
+          ];
+
+          $historyBrg               = $devdb->set($storeHistory)->get_compiled_insert('TH_HISTORY_BRG');
+          $queryHistory             = $devdb->query($historyBrg);
           }
         }
 
