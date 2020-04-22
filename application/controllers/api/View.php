@@ -179,6 +179,27 @@ class View extends BD_Controller {
       }
     }
 
+    function generateRename_post($input, $branch, $encode) {
+      // Initialization
+      header('Content-Type: application/json');
+      $this->auth_basic();
+      $devdb           = $this->db;
+      $repodb          = $this->reponpks;
+      $sqlgetIn        = $repodb->where("RENAMED_STATUS","0")->get('TH_RENAMED');
+      $resultservices  = $sqlgetIn->result_array();
+
+
+      $out["count"]    = count($resultservices);
+      $out["result"]   = $resultservices;
+
+        if ($encode == "true") {
+          $result["result"] = base64_encode(json_encode($out));
+          echo json_encode($result);
+        } else {
+          echo json_encode($out);
+        }
+    }
+
     function generateRecRealStorage_post($input, $branch, $encode) {
       // Initialization
       header('Content-Type: application/json');
