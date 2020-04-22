@@ -263,24 +263,40 @@ class View extends BD_Controller {
         $reffName               = $reffData[0]["REFF_NAME"];
 
         // TX_HISTORY_BARANG
-        $storeHistory  = [
-          "HIST_SI"         => $newdt[0]->NO_CONTAINER,
-          "HIST_BRANCH_ID"  => $newdt[0]->BRANCH_ID,
-          "HIST_COUNTER"    => $newdt[0]->REAL_STORAGE_COUNTER,
-          "HIST_STORAGE"    => $newdt[0]->REAL_STORAGE_TOTAL,
-          "HIST_ACTIVITY_ID"=> "3",
-          "HIST_ACTIVITY"   => $reffName,
-          "HIST_DATE"       => date('d-M-Y', strtotime($newdt[0]->REAL_DATE)),
-          "HIST_NOREQ"      => $newdt[0]->NO_REQUEST,
-          "HIST_DATE_REQ"   => "",
-          "HIST_TOTAL"      => $newdt[0]->REAL_STORAGE_TOTAL,
-          "HIST_IN"         => $newdt[0]->REAL_STORAGE_IN,
-          "HIST_OUT"        => $newdt[0]->REAL_STORAGE_OUT,
-          "HIST_USER"       => ""
-        ];
+        $devdb->query("CALL ADD_HISTORY_CARGO(
+              '".$newdt[0]->NO_CONTAINER."',
+              '".$newdt[0]->NO_REQUEST."',
+              '".date('d-M-Y', strtotime($newdt[0]->REAL_DATE))."',
+              NULL,
+              NULL,
+              3,
+              '".$reffName."',
+              '".$gate_back_date."',
+              '".$newdt[0]->REAL_STORAGE_TOTAL."',
+              '".$newdt[0]->REAL_STORAGE_IN."',
+              '".$newdt[0]->REAL_STORAGE_OUT."',
+              '".$detail["REQUEST_DTL_VESSEL_NAME"]."',
+              ".$newdt[0]->BRANCH_ID.",
+              NULL)");
 
-        $historyBrg               = $devdb->set($storeHistory)->get_compiled_insert('TH_HISTORY_BRG');
-        $queryHistory             = $devdb->query($historyBrg);
+        // $storeHistory  = [
+        //   "HIST_SI"         => $newdt[0]->NO_CONTAINER,
+        //   "HIST_BRANCH_ID"  => $newdt[0]->BRANCH_ID,
+        //   "HIST_COUNTER"    => $newdt[0]->REAL_STORAGE_COUNTER,
+        //   "HIST_STORAGE"    => $newdt[0]->REAL_STORAGE_TOTAL,
+        //   "HIST_ACTIVITY_ID"=> "3",
+        //   "HIST_ACTIVITY"   => $reffName,
+        //   "HIST_DATE"       => date('d-M-Y', strtotime($newdt[0]->REAL_DATE)),
+        //   "HIST_NOREQ"      => $newdt[0]->NO_REQUEST,
+        //   "HIST_DATE_REQ"   => "",
+        //   "HIST_TOTAL"      => $newdt[0]->REAL_STORAGE_TOTAL,
+        //   "HIST_IN"         => $newdt[0]->REAL_STORAGE_IN,
+        //   "HIST_OUT"        => $newdt[0]->REAL_STORAGE_OUT,
+        //   "HIST_USER"       => ""
+        // ];
+        //
+        // $historyBrg               = $devdb->set($storeHistory)->get_compiled_insert('TH_HISTORY_BRG');
+        // $queryHistory             = $devdb->query($historyBrg);
 
       }
 
@@ -372,24 +388,39 @@ class View extends BD_Controller {
         $reffName               = $reffData[0]["REFF_NAME"];
 
         // TX_HISTORY_BARANG
-        $storeHistory  = [
-          "HIST_SI"         => $newdt[0]->NO_CONTAINER,
-          "HIST_BRANCH_ID"  => $newdt[0]->DELIVERY_BRANCH_ID,
-          "HIST_COUNTER"    => $newdt[0]->DELIVERY_COUNTER,
-          "HIST_STORAGE"    => $newdt[0]->DELIVERY_TOTAL,
-          "HIST_ACTIVITY_ID"=> "4",
-          "HIST_ACTIVITY"   => $reffName,
-          "HIST_DATE"       => date('d-M-Y', strtotime($newdt[0]->REAL_DATE)),
-          "HIST_NOREQ"      => $newdt[0]->NO_REQUEST,
-          "HIST_DATE_REQ"   => "",
-          "HIST_TOTAL"      => $newdt[0]->DELIVERY_TOTAL,
-          "HIST_IN"         => "",
-          "HIST_OUT"        => "",
-          "HIST_USER"       => $newdt[0]->DELIVERY_CREATE_BY
-        ];
-
-        $historyBrg               = $devdb->set($storeHistory)->get_compiled_insert('TH_HISTORY_BRG');
-        $queryHistory             = $devdb->query($historyBrg);
+        $devdb->query("CALL ADD_HISTORY_CARGO(
+              '".$newdt[0]->NO_CONTAINER."',
+              '".$newdt[0]->NO_REQUEST."',
+              '".date('d-M-Y', strtotime($newdt[0]->REAL_DATE))."',
+              NULL,
+              NULL,
+              4,
+              '".$reffName."',
+              '".$gate_back_date."',
+              '".$newdt[0]->DELIVERY_TOTAL."',
+              NULL,
+              NULL,
+              NULL,
+              ".$newdt[0]->DELIVERY_BRANCH_ID.",
+              NULL)");
+        // $storeHistory  = [
+        //   "HIST_SI"         => $newdt[0]->NO_CONTAINER,
+        //   "HIST_BRANCH_ID"  => $newdt[0]->DELIVERY_BRANCH_ID,
+        //   "HIST_COUNTER"    => $newdt[0]->DELIVERY_COUNTER,
+        //   "HIST_STORAGE"    => $newdt[0]->DELIVERY_TOTAL,
+        //   "HIST_ACTIVITY_ID"=> "4",
+        //   "HIST_ACTIVITY"   => $reffName,
+        //   "HIST_DATE"       => date('d-M-Y', strtotime($newdt[0]->REAL_DATE)),
+        //   "HIST_NOREQ"      => $newdt[0]->NO_REQUEST,
+        //   "HIST_DATE_REQ"   => "",
+        //   "HIST_TOTAL"      => $newdt[0]->DELIVERY_TOTAL,
+        //   "HIST_IN"         => "",
+        //   "HIST_OUT"        => "",
+        //   "HIST_USER"       => $newdt[0]->DELIVERY_CREATE_BY
+        // ];
+        //
+        // $historyBrg               = $devdb->set($storeHistory)->get_compiled_insert('TH_HISTORY_BRG');
+        // $queryHistory             = $devdb->query($historyBrg);
 
       }
 

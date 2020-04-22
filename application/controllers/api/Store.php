@@ -1588,25 +1588,41 @@ class Store extends BD_Controller {
           $reffName               = $reffData[0]["REFF_NAME"];
 
 
-          // TX_HISTORY_BARANG
-          $storeHistory  = [
-            "HIST_SI"         => $detail["REQUEST_DTL_SI"],
-            "HIST_BRANCH_ID"  => $branch,
-            "HIST_COUNTER"    => "",
-            "HIST_STORAGE"    => $detail["REQUEST_DTL_TOTAL"],
-            "HIST_ACTIVITY_ID"=> "1",
-            "HIST_ACTIVITY"   => $reffName,
-            "HIST_DATE"       => date('d-M-Y', strtotime($header["REQUEST_CREATE_DATE"])),
-            "HIST_NOREQ"      => $header["REQ_NO"],
-            "HIST_DATE_REQ"   => date('d-M-Y', strtotime($header["REQUEST_RECEIVING_DATE"])),
-            "HIST_TOTAL"      => $detail["REQUEST_DTL_TOTAL"],
-            "HIST_IN"         => $detail["REQUEST_DTL_TOTAL"],
-            "HIST_OUT"        => "",
-            "HIST_USER"       => ""
-          ];
+          // // TX_HISTORY_BARANG
+          $devdb->query("CALL ADD_HISTORY_CARGO(
+                '".$detail["REQUEST_DTL_SI"]."',
+                '".$header["REQ_NO"]."',
+                '".date('d-M-Y', strtotime($header["REQUEST_RECEIVING_DATE"]))."',
+                NULL,
+                NULL,
+                1,
+                '".$reffName."',
+                '".$gate_back_date."',
+                '".$detail["REQUEST_DTL_TOTAL"]."',
+                '".$detail["REQUEST_DTL_TOTAL"]."',
+                NULL,
+                '".$detail["REQUEST_DTL_VESSEL_NAME"]."',
+                ".$branch.",
+                NULL)");
 
-          $historyBrg               = $devdb->set($storeHistory)->get_compiled_insert('TH_HISTORY_BRG');
-          $queryHistory             = $devdb->query($historyBrg);
+          // $storeHistory  = [
+          //   "HIST_SI"         => $detail["REQUEST_DTL_SI"],
+          //   "HIST_BRANCH_ID"  => $branch,
+          //   "HIST_COUNTER"    => "",
+          //   "HIST_STORAGE"    => $detail["REQUEST_DTL_TOTAL"],
+          //   "HIST_ACTIVITY_ID"=> "1",
+          //   "HIST_ACTIVITY"   => $reffName,
+          //   "HIST_DATE"       => date('d-M-Y', strtotime($header["REQUEST_CREATE_DATE"])),
+          //   "HIST_NOREQ"      => $header["REQ_NO"],
+          //   "HIST_DATE_REQ"   => date('d-M-Y', strtotime($header["REQUEST_RECEIVING_DATE"])),
+          //   "HIST_TOTAL"      => $detail["REQUEST_DTL_TOTAL"],
+          //   "HIST_IN"         => $detail["REQUEST_DTL_TOTAL"],
+          //   "HIST_OUT"        => "",
+          //   "HIST_USER"       => ""
+          // ];
+          //
+          // $historyBrg               = $devdb->set($storeHistory)->get_compiled_insert('TH_HISTORY_BRG');
+          // $queryHistory             = $devdb->query($historyBrg);
         }
       }
 
@@ -1735,24 +1751,40 @@ class Store extends BD_Controller {
 
 
           // TX_HISTORY_BARANG
-          $storeHistory  = [
-            "HIST_SI"         => $detail["REQUEST_DTL_SI"],
-            "HIST_BRANCH_ID"  => $branch,
-            "HIST_COUNTER"    => "",
-            "HIST_STORAGE"    => $detail["REQUEST_DTL_TOTAL"],
-            "HIST_ACTIVITY_ID"=> "2",
-            "HIST_ACTIVITY"   => $reffName,
-            "HIST_DATE"       => date('d-M-Y', strtotime($header["REQUEST_CREATE_DATE"])),
-            "HIST_NOREQ"      => $header["REQ_NO"],
-            "HIST_DATE_REQ"   => date('d-M-Y', strtotime($header["REQUEST_RECEIVING_DATE"])),
-            "HIST_TOTAL"      => "",
-            "HIST_IN"         => "",
-            "HIST_OUT"        => $detail["REQUEST_DTL_TOTAL"],
-            "HIST_USER"       => ""
-          ];
-
-          $historyBrg               = $devdb->set($storeHistory)->get_compiled_insert('TH_HISTORY_BRG');
-          $queryHistory             = $devdb->query($historyBrg);
+          $devdb->query("CALL ADD_HISTORY_CARGO(
+                '".$detail["REQUEST_DTL_SI"]."',
+                '".$header["REQ_NO"]."',
+                '".date('d-M-Y', strtotime($header["REQUEST_RECEIVING_DATE"]))."',
+                NULL,
+                NULL,
+                2,
+                '".$reffName."',
+                '".$gate_back_date."',
+                '".$detail["REQUEST_DTL_TOTAL"]."',
+                null,
+                '".$detail["REQUEST_DTL_TOTAL"]."',
+                '".$detail["REQUEST_DTL_VESSEL_NAME"]."',
+                ".$branch.",
+                NULL)");
+                
+          // $storeHistory  = [
+          //   "HIST_SI"         => $detail["REQUEST_DTL_SI"],
+          //   "HIST_BRANCH_ID"  => $branch,
+          //   "HIST_COUNTER"    => "",
+          //   "HIST_STORAGE"    => $detail["REQUEST_DTL_TOTAL"],
+          //   "HIST_ACTIVITY_ID"=> "2",
+          //   "HIST_ACTIVITY"   => $reffName,
+          //   "HIST_DATE"       => date('d-M-Y', strtotime($header["REQUEST_CREATE_DATE"])),
+          //   "HIST_NOREQ"      => $header["REQ_NO"],
+          //   "HIST_DATE_REQ"   => date('d-M-Y', strtotime($header["REQUEST_RECEIVING_DATE"])),
+          //   "HIST_TOTAL"      => "",
+          //   "HIST_IN"         => "",
+          //   "HIST_OUT"        => $detail["REQUEST_DTL_TOTAL"],
+          //   "HIST_USER"       => ""
+          // ];
+          //
+          // $historyBrg               = $devdb->set($storeHistory)->get_compiled_insert('TH_HISTORY_BRG');
+          // $queryHistory             = $devdb->query($historyBrg);
           }
         }
 
