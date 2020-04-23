@@ -97,6 +97,36 @@ class Store extends BD_Controller {
       $this->$action($input, $branch, $encode);
     }
 
+    function getUpateRename_post($input, $branch, $encode) {
+      $this->auth_basic();
+      //header
+      $devdb               = $this->db;
+      $repodb              = $this->reponpks;
+      $header              = $input['header'];
+      $branch              = $header["BRANCH_ID"];
+      $CONT_NO             = $header['CONT_NO'];
+
+      $update              = $repodb->set("RENAMED_STATUS", "1")
+                                    ->where('RENAMED_CONT_OLD', $CONT_NO)
+                                    ->where('RENAMED_BRANCH_ID', $branch)
+                                    ->update('TH_RENAMED');
+
+      $result   = [
+        "BRANCH_ID" => $branch,
+        "CONT_NO"   => $CONT_NO
+      ];
+
+      // JSON Response
+      header('Content-Type: application/json');
+      if ($encode == "true") {
+        $out["result"] = base64_encode(json_encode($result));
+        echo json_encode($out);
+      } else {
+        echo json_encode($result);
+      }
+
+    }
+
     function getDelivery_post($input, $branch, $encode) {
 
       $this->auth_basic();
@@ -1766,7 +1796,7 @@ class Store extends BD_Controller {
                 '".$detail["REQUEST_DTL_VESSEL_NAME"]."',
                 ".$branch.",
                 NULL)");
-                
+
           // $storeHistory  = [
           //   "HIST_SI"         => $detail["REQUEST_DTL_SI"],
           //   "HIST_BRANCH_ID"  => $branch,
