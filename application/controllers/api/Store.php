@@ -111,6 +111,27 @@ class Store extends BD_Controller {
                                     ->where('RENAMED_BRANCH_ID', $branch)
                                     ->update('TH_RENAMED');
 
+      // History Container
+      // $devdb->query("CALL ADD_HISTORY_CONTAINER(
+      //         '" . $REQ_DTL_CONT . "',
+      //         '" . $REQ_NO . "',
+      //         '" . $REQ_DELIVERY_DATE . "',
+      //         '" . $REQ_DTL_SIZE . "',
+      //         '" . $REQ_DTL_TYPE . "',
+      //         '" . $REQ_DTL_CONT_STATUS . "',
+      //         NULL,
+      //         NULL,
+      //         NULL,
+      //         NULL,
+      //         NULL,
+      //         4,
+      //         'Request Delivery',
+      //         NULL,
+      //         NULL,
+      //         " . $branch . ",
+      //         NULL,
+      //         NULL)");
+
       $result   = [
         "BRANCH_ID" => $branch,
         "CONT_NO"   => $CONT_NO
@@ -128,7 +149,6 @@ class Store extends BD_Controller {
     }
 
     function getDelivery_post($input, $branch, $encode) {
-
       $this->auth_basic();
       //header
       $devdb               = $this->db;
@@ -402,7 +422,9 @@ class Store extends BD_Controller {
                     NULL,
                     " . $branch . ",
                     NULL,
-                    NULL)");
+                    '".$val['REQ_DTL_CONT_HAZARD']."',
+                    NULL)
+                    ");
           } else {
             $result["DETAIL"][] = [
               "REQ_DTL_CONT"               => $val['REQ_DTL_CONT'],
@@ -897,7 +919,9 @@ class Store extends BD_Controller {
                     NULL,
                     ".$branch.",
                     '".$REQ_DTL_ORIGIN."',
-                    NULL)");
+                    '".$REQ_DTL_CONT_HAZARD."',
+                    NULL)
+                    ");
             } else {
               $result["DETAIL"][] = [
                 "REQ_DTL_CONT"               => $REQ_DTL_CONT,
@@ -1245,8 +1269,8 @@ class Store extends BD_Controller {
                       NULL,
                       ".$branch.",
                       '".$STRIP_DARI."',
-                      NULL
-                      )");
+                      '".$REQ_DTL_CONT_HAZARD."',
+                      NULL)");
             } else {
               $result["DETAIL"][] = [
                                     "REQ_DTL_CONT"                => $REQ_DTL_CONT,
@@ -1361,6 +1385,7 @@ class Store extends BD_Controller {
                   NULL,
                   " . $branch . ",
                   NULL,
+                  NULL,
                   NULL)");
 
           $storeDetail            = [
@@ -1473,6 +1498,7 @@ class Store extends BD_Controller {
                   NULL,
                   NULL,
                   " . $branch . ",
+                  NULL,
                   NULL,
                   NULL)");
 
@@ -1618,16 +1644,16 @@ class Store extends BD_Controller {
           $reffName               = $reffData[0]["REFF_NAME"];
 
 
-          // // TX_HISTORY_BARANG
-          $devdb->query("CALL ADD_HISTORY_CARGO(
+          // TX_HISTORY_BARANG
+          $db->query("CALL ADD_HISTORY_CARGO(
                 '".$detail["REQUEST_DTL_SI"]."',
-                '".$header["REQ_NO"]."',
+                '".$header["REQUEST_NO"]."',
                 '".date('d-M-Y', strtotime($header["REQUEST_RECEIVING_DATE"]))."',
                 NULL,
                 NULL,
                 1,
                 '".$reffName."',
-                '".$gate_back_date."',
+                '".$header["REQUEST_CREATE_DATE"]."',
                 '".$detail["REQUEST_DTL_TOTAL"]."',
                 '".$detail["REQUEST_DTL_TOTAL"]."',
                 NULL,
@@ -2088,6 +2114,7 @@ class Store extends BD_Controller {
               NULL,
               " . $branch . ",
               '" . $RECEIVING_DARI . "',
+              '".$REQ_DTL_CONT_HAZARD."',
               NULL)");
 
                 $sqlcekmstcont = "SELECT CONTAINER_NO FROM TM_CONTAINER WHERE CONTAINER_NO='".$REQ_DTL_CONT."' AND CONTAINER_BRANCH_ID = ".$branch." ";
@@ -2634,6 +2661,7 @@ class Store extends BD_Controller {
                   NULL,
                   4,
                   '',
+                  NULL,
                   NULL)");
           }
 

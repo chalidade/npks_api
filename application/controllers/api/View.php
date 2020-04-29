@@ -284,21 +284,21 @@ class View extends BD_Controller {
         $reffName               = $reffData[0]["REFF_NAME"];
 
         // TX_HISTORY_BARANG
-        $devdb->query("CALL ADD_HISTORY_CARGO(
-              '".$newdt[0]->NO_CONTAINER."',
-              '".$newdt[0]->NO_REQUEST."',
-              '".date('d-M-Y', strtotime($newdt[0]->REAL_DATE))."',
-              NULL,
-              NULL,
-              3,
-              '".$reffName."',
-              '".$gate_back_date."',
-              '".$newdt[0]->REAL_STORAGE_TOTAL."',
-              '".$newdt[0]->REAL_STORAGE_IN."',
-              '".$newdt[0]->REAL_STORAGE_OUT."',
-              '".$detail["REQUEST_DTL_VESSEL_NAME"]."',
-              ".$newdt[0]->BRANCH_ID.",
-              NULL)");
+        // $devdb->query("CALL ADD_HISTORY_CARGO(
+        //       '".$newdt[0]->NO_CONTAINER."',
+        //       '".$newdt[0]->NO_REQUEST."',
+        //       '".date('d-M-Y', strtotime($newdt[0]->REAL_DATE))."',
+        //       NULL,
+        //       NULL,
+        //       3,
+        //       '".$reffName."',
+        //       '".$gate_back_date."',
+        //       '".$newdt[0]->REAL_STORAGE_TOTAL."',
+        //       '".$newdt[0]->REAL_STORAGE_IN."',
+        //       '".$newdt[0]->REAL_STORAGE_OUT."',
+        //       '".$detail["REQUEST_DTL_VESSEL_NAME"]."',
+        //       ".$newdt[0]->BRANCH_ID.",
+        //       NULL)");
 
         // $storeHistory  = [
         //   "HIST_SI"         => $newdt[0]->NO_CONTAINER,
@@ -409,21 +409,21 @@ class View extends BD_Controller {
         $reffName               = $reffData[0]["REFF_NAME"];
 
         // TX_HISTORY_BARANG
-        $devdb->query("CALL ADD_HISTORY_CARGO(
-              '".$newdt[0]->NO_CONTAINER."',
-              '".$newdt[0]->NO_REQUEST."',
-              '".date('d-M-Y', strtotime($newdt[0]->REAL_DATE))."',
-              NULL,
-              NULL,
-              4,
-              '".$reffName."',
-              '".$gate_back_date."',
-              '".$newdt[0]->DELIVERY_TOTAL."',
-              NULL,
-              NULL,
-              NULL,
-              ".$newdt[0]->DELIVERY_BRANCH_ID.",
-              NULL)");
+        // $devdb->query("CALL ADD_HISTORY_CARGO(
+        //       '".$newdt[0]->NO_CONTAINER."',
+        //       '".$newdt[0]->NO_REQUEST."',
+        //       '".date('d-M-Y', strtotime($newdt[0]->REAL_DATE))."',
+        //       NULL,
+        //       NULL,
+        //       4,
+        //       '".$reffName."',
+        //       '".$gate_back_date."',
+        //       '".$newdt[0]->DELIVERY_TOTAL."',
+        //       NULL,
+        //       NULL,
+        //       NULL,
+        //       ".$newdt[0]->DELIVERY_BRANCH_ID.",
+        //       NULL)");
         // $storeHistory  = [
         //   "HIST_SI"         => $newdt[0]->NO_CONTAINER,
         //   "HIST_BRANCH_ID"  => $newdt[0]->DELIVERY_BRANCH_ID,
