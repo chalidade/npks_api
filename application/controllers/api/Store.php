@@ -112,7 +112,7 @@ class Store extends BD_Controller {
                                     ->update('TH_RENAMED');
 
       // History Container
-      // $devdb->query("CALL ADD_HISTORY_CONTAINER(
+      // $devdb->query("CALL INSERT_HISTORY_CONTAINER(
       //         '" . $REQ_DTL_CONT . "',
       //         '" . $REQ_NO . "',
       //         '" . $REQ_DELIVERY_DATE . "',
@@ -404,7 +404,7 @@ class Store extends BD_Controller {
               }
             }
 
-            $devdb->query("CALL ADD_HISTORY_CONTAINER(
+            $devdb->query("CALL INSERT_HISTORY_CONTAINER(
                     '" . $REQ_DTL_CONT . "',
                     '" . $REQ_NO . "',
                     '" . $REQ_DELIVERY_DATE . "',
@@ -453,15 +453,15 @@ class Store extends BD_Controller {
 
     function getRecStuffing_post($input, $branch, $encode){
       $this->auth_basic();
-      $this->getStuffing_post($input, $branch, $encode);
       $this->getReceiving_post($input, $branch, $encode);
+      $this->getStuffing_post($input, $branch, $encode);
       // buatkan funct returnnya
     }
 
     function getRecStripping_post($input, $branch, $encode){
       $this->auth_basic();
-      $this->getStripping_post($input, $branch, $encode);
       $this->getReceiving_post($input, $branch, $encode);
+      $this->getStripping_post($input, $branch, $encode);
       // buatkan funct returnnya
     }
 
@@ -901,7 +901,7 @@ class Store extends BD_Controller {
 
               //insert history container
               $devdb->query("
-                    CALL ADD_HISTORY_CONTAINER(
+                    CALL INSERT_HISTORY_CONTAINER(
                     '".$REQ_DTL_CONT."',
                     '".$REQ_NO."',
                     '".$REQ_STUFF_DATE."',
@@ -1250,7 +1250,7 @@ class Store extends BD_Controller {
 
               //insert history container
               $devdb->query("
-                    CALL ADD_HISTORY_CONTAINER
+                    CALL INSERT_HISTORY_CONTAINER
                     (
                       '".$REQ_DTL_CONT."',
                       '".$REQ_NO."',
@@ -1367,7 +1367,7 @@ class Store extends BD_Controller {
 
           // Insert History Container
           $recDate                = date('m/d/Y',strtotime($header["PLUG_CREATE_DATE"]));
-          $this->db->query("CALL ADD_HISTORY_CONTAINER(
+          $this->db->query("CALL INSERT_HISTORY_CONTAINER(
                   '" . $detail["PLUG_DTL_CONT"] . "',
                   '" . $header["PLUG_NO"] . "',
                   '" . $recDate . "',
@@ -1481,7 +1481,7 @@ class Store extends BD_Controller {
 
           // Insert History Container
           $recDate                = date('m/d/Y',strtotime($header["FUMI_CREATE_DATE"]));
-          $this->db->query("CALL ADD_HISTORY_CONTAINER(
+          $this->db->query("CALL INSERT_HISTORY_CONTAINER(
                   '" . $detail["FUMI_DTL_CONT"] . "',
                   '" . $header["FUMI_NO"] . "',
                   '" . $recDate . "',
@@ -2096,7 +2096,7 @@ class Store extends BD_Controller {
               }
 
               //insert history container
-              $this->db->query("CALL ADD_HISTORY_CONTAINER(
+              $this->db->query("CALL INSERT_HISTORY_CONTAINER(
               '" . $REQ_DTL_CONT . "',
               '" . $REQ_NO . "',
               '" . $REQ_RECEIVING_DATE . "',
@@ -2356,7 +2356,7 @@ class Store extends BD_Controller {
 
 
               //insert history container
-              $this->db->query("CALL ADD_HISTORY_CONTAINER(
+              $this->db->query("CALL INSERT_HISTORY_CONTAINER(
               '" . $REQ_DTL_CONT . "',
               '" . $REQ_NO . "',
               '" . $REQ_RECEIVING_DATE . "',
@@ -2472,6 +2472,7 @@ class Store extends BD_Controller {
 
             if($cek_jumlah_out == $cek_jumlah_dtl){
 							$repodb->set('FUMI_STATUS',2)->where('FUMI_ID',$hdrId)->update('TX_REQ_FUMI_HDR');
+              }
 						} else if($header["CANCELLED_STATUS"] == 20) {
               // Batal Plugging
               $queryhdr             = $repodb->where("PLUG_NO", $header["REQ_NO"])->get('TX_REQ_PLUG_HDR');
@@ -2643,7 +2644,7 @@ class Store extends BD_Controller {
           } else {
             //insert history container
             $devdb->query("
-                  CALL ADD_HISTORY_CONTAINER(
+                  CALL INSERT_HISTORY_CONTAINER(
                   '".$noContainer."',
                   '".$header["REQ_NO"]."',
                   '".$header["REQ_RECEIVING_DATE"]."',
@@ -2681,7 +2682,7 @@ class Store extends BD_Controller {
           $result["MSG"]          = "Success Cancel";
           $result["DETAIL"][]     = $storeDetail;
 
-        }} else {
+        } else {
         $storeDetail            = [
           "CANCELLED_NOREQ"       => $header["REQ_NO"],
           "CANCELLED_NO_CONT"     => $noContainer,
@@ -2697,6 +2698,251 @@ class Store extends BD_Controller {
 
         $result["MSG"]          = "Already Exist";
         $result["DETAIL"][]     = $storeDetail;
+
+        // if ($header["CANCELLED_STATUS"] == 17) {
+        //   //Batal Delivery Container
+        //   $queryhdr               = $repodb->where("REQ_NO", $header["REQ_NO"])->get('TX_REQ_DELIVERY_HDR');
+        //   $hdrData                = $queryhdr->result_array();
+        //   $hdrId                  = $hdrData[0]["REQ_ID"];
+        //   $update                 = $repodb->set("REQ_DTL_ACTIVE", "T")->where('REQ_DTL_CONT', $noContainer)->where('REQ_HDR_ID', $hdrId)->update('TX_REQ_DELIVERY_DTL');
+        // } else if($header["CANCELLED_STATUS"] == 16) {
+        //   // Batal Receiving
+        //   $queryhdr               = $repodb->where("REQUEST_NO", $header["REQ_NO"])->get('TX_REQ_RECEIVING_HDR');
+        //   $hdrData                = $queryhdr->result_array();
+        //   $hdrId                  = $hdrData[0]["REQUEST_ID"];
+        //   $update                 = $repodb->set("REQUEST_DTL_CANCELLED", "Y")->where('REQUEST_DTL_CONT', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_RECEIVING_DTL');
+        // } else if($header["CANCELLED_STATUS"] == 8) {
+        //   // Batal Stuffing
+        //   $queryhdr               = $repodb->where("STUFF_NO", $header["REQ_NO"])->get('TX_REQ_STUFF_HDR');
+        //   $hdrData                = $queryhdr->result_array();
+        //   $hdrId                  = $hdrData[0]["STUFF_ID"];
+        //   $update                 = $repodb->set("STUFF_DTL_ACTIVE", "T")->set("STUFF_DTL_CANCELLED", "Y")->set("STUFF_DTL_STATUS", "2")->where('STUFF_DTL_CONT', $noContainer)->where('STUFF_DTL_HDR_ID', $hdrId)->update('TX_REQ_STUFF_DTL');
+        //
+        //   $cek_jumlah_dtl         = $repodb->where('STUFF_DTL_HDR_ID',$hdrId)->from('TX_REQ_STUFF_DTL')->count_all_results();
+        //   $cek_jumlah_out         = $repodb->where('STUFF_DTL_HDR_ID',$hdrId)->where('STUFF_DTL_ACTIVE','T')->from('TX_REQ_STUFF_DTL')->count_all_results();
+        //
+        //   if($cek_jumlah_out == $cek_jumlah_dtl){
+        //     $repodb->set('STUFF_STATUS',2)->where('STUFF_ID',$hdrId)->update('TX_REQ_STUFF_HDR');
+        //   }
+        // } else if($header["CANCELLED_STATUS"] == 18) {
+        //   // Batal Striping
+        //   $queryhdr               = $repodb->where("STRIP_NO", $header["REQ_NO"])->get('TX_REQ_STRIP_HDR');
+        //   $hdrData                = $queryhdr->result_array();
+        //   $hdrId                  = $hdrData[0]["STRIP_ID"];
+        //   $update                 = $repodb->set("STRIP_DTL_ACTIVE", "T")->set("STRIP_DTL_CANCELLED", "Y")->set("STRIP_DTL_STATUS", "2")->where('STRIP_DTL_CONT', $noContainer)->where('STRIP_DTL_HDR_ID', $hdrId)->update('TX_REQ_STRIP_DTL');
+        //
+        //   $cek_jumlah_dtl         = $repodb->where('STRIP_DTL_HDR_ID',$hdrId)->from('TX_REQ_STRIP_DTL')->count_all_results();
+        //   $cek_jumlah_out         = $repodb->where('STRIP_DTL_HDR_ID',$hdrId)->where('STRIP_DTL_ACTIVE','T')->from('TX_REQ_STRIP_DTL')->count_all_results();
+        //
+        //   if($cek_jumlah_out == $cek_jumlah_dtl){
+        //     $repodb->set('STRIP_STATUS',2)->where('STRIP_ID',$hdrId)->update('TX_REQ_STRIP_HDR');
+        //   }
+        // } else if($header["CANCELLED_STATUS"] == 19) {
+        //   // Batal Fumigasi
+        //   $queryhdr               = $repodb->where("FUMI_NO", $header["REQ_NO"])->get('TX_REQ_FUMI_HDR');
+        //   $hdrData                = $queryhdr->result_array();
+        //   $hdrId                  = $hdrData[0]["FUMI_ID"];
+        //   $update                 = $repodb->set("FUMI_DTL_ACTIVE", "T")->set("FUMI_DTL_CANCELLED", "Y")->set("FUMI_DTL_STATUS", "2")->where('FUMI_DTL_CONT', $noContainer)->where('FUMI_DTL_HDR_ID', $hdrId)->update('TX_REQ_FUMI_DTL');
+        //
+        //   $cek_jumlah_dtl         = $repodb->where('FUMI_DTL_HDR_ID',$hdrId)->from('TX_REQ_FUMI_DTL')->count_all_results();
+        //   $cek_jumlah_out         = $repodb->where('FUMI_DTL_HDR_ID',$hdrId)->where('FUMI_DTL_ACTIVE','T')->from('TX_REQ_FUMI_DTL')->count_all_results();
+        //
+        //   if($cek_jumlah_out == $cek_jumlah_dtl){
+        //     $repodb->set('FUMI_STATUS',2)->where('FUMI_ID',$hdrId)->update('TX_REQ_FUMI_HDR');
+        //     }
+        //   } else if($header["CANCELLED_STATUS"] == 20) {
+        //     // Batal Plugging
+        //     $queryhdr             = $repodb->where("PLUG_NO", $header["REQ_NO"])->get('TX_REQ_PLUG_HDR');
+        //     $hdrData              = $queryhdr->result_array();
+        //     $hdrId                = $hdrData[0]["PLUG_ID"];
+        //     $update               = $repodb->set("PLUG_DTL_ACTIVE", "T")->set("PLUG_DTL_CANCELLED", "Y")->set("PLUG_DTL_STATUS", "2")->where('PLUG_DTL_CONT', $noContainer)->where('PLUG_DTL_HDR_ID', $hdrId)->update('TX_REQ_PLUG_DTL');
+        //
+        //     $cek_jumlah_dtl       = $repodb->where('PLUG_DTL_HDR_ID',$hdrId)->from('TX_REQ_PLUG_DTL')->count_all_results();
+        //     $cek_jumlah_out       = $repodb->where('PLUG_DTL_HDR_ID',$hdrId)->where('PLUG_DTL_ACTIVE','T')->from('TX_REQ_PLUG_DTL')->count_all_results();
+        //
+        //     if($cek_jumlah_out == $cek_jumlah_dtl){
+        //       $repodb->set('PLUG_STATUS',2)->where('PLUG_ID',$hdrId)->update('TX_REQ_PLUG_HDR');
+        //     }
+        // }  else if($header["CANCELLED_STATUS"] == 21) {
+        //   // Batal Receiving Barang
+        //   $queryhdr             = $repodb->where("REQUEST_NO", $header["REQ_NO"])->get('TX_REQ_RECEIVING_BRG_HDR');
+        //   $hdrData              = $queryhdr->result_array();
+        //   $hdrId                = $hdrData[0]["REQUEST_ID"];
+        //
+        //   $queryQtyReq          = $repodb->where('REQUEST_HDR_ID', $hdrId)->where('REQUEST_DTL_SI', $noContainer)->get("TX_REQ_RECEIVING_BRG_DTL");
+        //   $arrReq               = $queryQtyReq->result_array();
+        //   $qtyAwal              = $arrReq[0]["REQUEST_DTL_TOTAL"];
+        //
+        //   $totalQty             = $qtyAwal - $detail["REQ_DTL_QTY"];
+        //
+        //   if ($totalQty > 0) {
+        //     $update             = $repodb->set("REQUEST_DTL_TOTAL", $totalQty)->where('REQUEST_DTL_SI', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_RECEIVING_BRG_DTL');
+        //   } else {
+        //     $update             = $repodb->set("REQUEST_DTL_TOTAL", $totalQty)->set("REQUEST_DTL_ACTIVE", 'T')->where('REQUEST_DTL_SI', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_RECEIVING_BRG_DTL');
+        //   }
+        //
+        //   $cek_jumlah_dtl       = $repodb->where('REQUEST_HDR_ID',$hdrId)->from('TX_REQ_RECEIVING_BRG_DTL')->count_all_results();
+        //   $cek_jumlah_out       = $repodb->where('REQUEST_HDR_ID',$hdrId)->where('REQUEST_DTL_ACTIVE','T')->from('TX_REQ_RECEIVING_BRG_DTL')->count_all_results();
+        //
+        //   if($cek_jumlah_out == $cek_jumlah_dtl){
+        //     $repodb->set('REQUEST_STATUS',2)->where('REQUEST_ID',$hdrId)->update('TX_REQ_RECEIVING_BRG_HDR');
+        //   }
+        // }  else if($header["CANCELLED_STATUS"] == 22) {
+        //   // Batal Delivery Barang
+        //   $queryhdr             = $repodb->where("REQUEST_NO", $header["REQ_NO"])->get('TX_REQ_DELIVERY_BRG_HDR');
+        //   $hdrData              = $queryhdr->result_array();
+        //   $hdrId                = $hdrData[0]["REQUEST_ID"];
+        //
+        //   $queryQtyReq          = $repodb->where('REQUEST_HDR_ID', $hdrId)->where('REQUEST_DTL_SI', $noContainer)->get("TX_REQ_DELIVERY_BRG_DTL");
+        //   $arrReq               = $queryQtyReq->result_array();
+        //   $qtyAwal              = $arrReq[0]["REQUEST_DTL_TOTAL"];
+        //   $totalQty             = $qtyAwal - $detail["REQ_DTL_QTY"];
+        //
+        //   if ($totalQty > 0) {
+        //     $update             = $repodb->set("REQUEST_DTL_TOTAL", $totalQty)->where('REQUEST_DTL_SI', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_DELIVERY_BRG_DTL');
+        //   } else {
+        //     $update             = $repodb->set("REQUEST_DTL_TOTAL", $totalQty)->set("REQUEST_DTL_ACTIVE", 'T')->where('REQUEST_DTL_SI', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_DELIVERY_BRG_DTL');
+        //   }
+        //
+        //   $cek_jumlah_dtl       = $repodb->where('REQUEST_HDR_ID',$hdrId)->from('TX_REQ_DELIVERY_BRG_DTL')->count_all_results();
+        //   $cek_jumlah_out       = $repodb->where('REQUEST_HDR_ID',$hdrId)->where('REQUEST_DTL_ACTIVE','T')->from('TX_REQ_DELIVERY_BRG_DTL')->count_all_results();
+        //
+        //   if($cek_jumlah_out == $cek_jumlah_dtl){
+        //     $repodb->set('REQUEST_STATUS',2)->where('REQUEST_ID',$hdrId)->update('TX_REQ_DELIVERY_BRG_HDR');
+        //   }
+        // } else if($header["CANCELLED_STATUS"] == 23) {
+        //   // Batal Stuffing
+        //   $queryhdr               = $repodb->where("STUFF_NO", $header["REQ_NO"])->get('TX_REQ_STUFF_HDR');
+        //   $hdrData                = $queryhdr->result_array();
+        //   $hdrId                  = $hdrData[0]["STUFF_ID"];
+        //   $update                 = $repodb->set("STUFF_DTL_ACTIVE", "T")->set("STUFF_DTL_CANCELLED", "Y")->set("STUFF_DTL_STATUS", "2")->where('STUFF_DTL_CONT', $noContainer)->where('STUFF_DTL_HDR_ID', $hdrId)->update('TX_REQ_STUFF_DTL');
+        //
+        //   $cek_jumlah_dtl         = $repodb->where('STUFF_DTL_HDR_ID',$hdrId)->from('TX_REQ_STUFF_DTL')->count_all_results();
+        //   $cek_jumlah_out         = $repodb->where('STUFF_DTL_HDR_ID',$hdrId)->where('STUFF_DTL_ACTIVE','T')->from('TX_REQ_STUFF_DTL')->count_all_results();
+        //
+        //   if($cek_jumlah_out == $cek_jumlah_dtl){
+        //     $repodb->set('STUFF_STATUS',2)->where('STUFF_ID',$hdrId)->update('TX_REQ_STUFF_HDR');
+        //   }
+        //
+        //   // Batal Receiving
+        //   $queryhdr               = $repodb->where("REQUEST_NO", $header["REQ_NO"])->get('TX_REQ_RECEIVING_HDR');
+        //   $hdrData                = $queryhdr->result_array();
+        //   $hdrId                  = $hdrData[0]["REQUEST_ID"];
+        //   $update                 = $repodb->set("REQUEST_DTL_CANCELLED", "Y")->where('REQUEST_DTL_CONT', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_RECEIVING_DTL');
+        //
+        //   $cek_jumlah_dtl         = $repodb->where('REQUEST_HDR_ID',$hdrId)->from('TX_REQ_DELIVERY_DTL')->count_all_results();
+        //   $cek_jumlah_out         = $repodb->where('REQUEST_HDR_ID',$hdrId)->where('REQUEST_DTL_CANCELLED','Y')->from('TX_REQ_DELIVERY_DTL')->count_all_results();
+        //
+        //   if($cek_jumlah_out == $cek_jumlah_dtl){
+        //     $repodb->set('REQUEST_STATUS',2)->where('REQUEST_HDR_ID',$hdrId)->update('TX_REQ_DELIVERY_HDR');
+        //   }
+        //
+        // } else if($header["CANCELLED_STATUS"] == 24) {
+        //   //Batal Delivery Container
+        //   $queryhdr               = $repodb->where("REQ_NO", $header["REQ_NO"])->get('TX_REQ_DELIVERY_HDR');
+        //   $hdrData                = $queryhdr->result_array();
+        //   $hdrId                  = $hdrData[0]["REQ_ID"];
+        //   $update                 = $repodb->set("REQ_DTL_ACTIVE", "T")->where('REQ_DTL_CONT', $noContainer)->where('REQ_HDR_ID', $hdrId)->update('TX_REQ_DELIVERY_DTL');
+        //
+        //   $cek_jumlah_dtl         = $repodb->where('REQ_HDR_ID',$hdrId)->from('TX_REQ_DELIVERY_DTL')->count_all_results();
+        //   $cek_jumlah_out         = $repodb->where('REQ_HDR_ID',$hdrId)->where('REQ_DTL_ACTIVE','T')->from('TX_REQ_DELIVERY_DTL')->count_all_results();
+        //
+        //   if($cek_jumlah_out == $cek_jumlah_dtl){
+        //     $repodb->set('REQUEST_STATUS',2)->where('REQ_HDR_ID',$hdrId)->update('TX_REQ_DELIVERY_HDR');
+        //   }
+        //
+        //   // Batal Receiving
+        //   $queryhdr               = $repodb->where("REQUEST_NO", $header["REQ_NO"])->get('TX_REQ_RECEIVING_HDR');
+        //   $hdrData                = $queryhdr->result_array();
+        //   $hdrId                  = $hdrData[0]["REQUEST_ID"];
+        //   $update                 = $repodb->set("REQUEST_DTL_CANCELLED", "Y")->where('REQUEST_DTL_CONT', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_RECEIVING_DTL');
+        //
+        //   $cek_jumlah_dtl         = $repodb->where('REQUEST_HDR_ID',$hdrId)->from('TX_REQ_DELIVERY_DTL')->count_all_results();
+        //   $cek_jumlah_out         = $repodb->where('REQUEST_HDR_ID',$hdrId)->where('REQUEST_DTL_CANCELLED','Y')->from('TX_REQ_DELIVERY_DTL')->count_all_results();
+        //
+        //   if($cek_jumlah_out == $cek_jumlah_dtl){
+        //     $repodb->set('REQUEST_STATUS',2)->where('REQUEST_HDR_ID',$hdrId)->update('TX_REQ_DELIVERY_HDR');
+        //   }
+        // }  else if($header["CANCELLED_STATUS"] == 25) {
+        //   // Batal Striping
+        //   $queryhdr               = $repodb->where("STRIP_NO", $header["REQ_NO"])->get('TX_REQ_STRIP_HDR');
+        //   $hdrData                = $queryhdr->result_array();
+        //   $hdrId                  = $hdrData[0]["STRIP_ID"];
+        //   $update                 = $repodb->set("STRIP_DTL_ACTIVE", "T")->set("STRIP_DTL_CANCELLED", "Y")->set("STRIP_DTL_STATUS", "2")->where('STRIP_DTL_CONT', $noContainer)->where('STRIP_DTL_HDR_ID', $hdrId)->update('TX_REQ_STRIP_DTL');
+        //
+        //   $cek_jumlah_dtl         = $repodb->where('STRIP_DTL_HDR_ID',$hdrId)->from('TX_REQ_STRIP_DTL')->count_all_results();
+        //   $cek_jumlah_out         = $repodb->where('STRIP_DTL_HDR_ID',$hdrId)->where('STRIP_DTL_ACTIVE','T')->from('TX_REQ_STRIP_DTL')->count_all_results();
+        //
+        //   if($cek_jumlah_out == $cek_jumlah_dtl){
+        //     $repodb->set('STRIP_STATUS',2)->where('STRIP_ID',$hdrId)->update('TX_REQ_STRIP_HDR');
+        //   }
+        //
+        //   // Batal Receiving
+        //   $queryhdr               = $repodb->where("REQUEST_NO", $header["REQ_NO"])->get('TX_REQ_RECEIVING_HDR');
+        //   $hdrData                = $queryhdr->result_array();
+        //   $hdrId                  = $hdrData[0]["REQUEST_ID"];
+        //   $update                 = $repodb->set("REQUEST_DTL_CANCELLED", "Y")->where('REQUEST_DTL_CONT', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_RECEIVING_DTL');
+        //
+        //   $cek_jumlah_dtl         = $repodb->where('REQUEST_HDR_ID',$hdrId)->from('TX_REQ_DELIVERY_DTL')->count_all_results();
+        //   $cek_jumlah_out         = $repodb->where('REQUEST_HDR_ID',$hdrId)->where('REQUEST_DTL_CANCELLED','Y')->from('TX_REQ_DELIVERY_DTL')->count_all_results();
+        //
+        //   if($cek_jumlah_out == $cek_jumlah_dtl){
+        //     $repodb->set('REQUEST_STATUS',2)->where('REQUEST_HDR_ID',$hdrId)->update('TX_REQ_DELIVERY_HDR');
+        //   }
+        // }
+        //
+        // // REFF_NAME
+        // $tmReff                 = $repodb->where("REFF_ID", $header["CANCELLED_STATUS"])->where('REFF_TR_ID', '4')->get('TM_REFF');
+        // $reffData               = $tmReff->result_array();
+        // $reffName               = $reffData[0]["REFF_NAME"];
+        //
+        //
+        // if ($header["CANCELLED_STATUS"] == 21 || $header["CANCELLED_STATUS"] == 22) {
+        //   $storeHistory  = [
+        //     "HIST_SI"         => $noContainer,
+        //     "HIST_BRANCH_ID"  => $branch,
+        //     "HIST_COUNTER"    => "",
+        //     "HIST_STORAGE"    => "",
+        //     "HIST_ACTIVITY_ID"=> $header["CANCELLED_STATUS"],
+        //     "HIST_ACTIVITY"   => $reffName,
+        //     "HIST_DATE"       => "",
+        //     "HIST_NOREQ"      => $header["REQ_NO"],
+        //     "HIST_DATE_REQ"   => "",
+        //     "HIST_TOTAL"      => $totalQty,
+        //     "HIST_IN"         => "",
+        //     "HIST_OUT"        => "",
+        //     "HIST_USER"       => "",
+        //     "HIST_TIMESTAMP"  => null
+        //   ];
+        //
+        //   $historyBrg               = $devdb->set($storeHistory)->get_compiled_insert('TH_HISTORY_BRG');
+        //   $queryHistory             = $devdb->query($historyBrg);
+        //
+        // } else {
+        //   //insert history container
+        //   $devdb->query("
+        //         CALL INSERT_HISTORY_CONTAINER(
+        //         '".$noContainer."',
+        //         '".$header["REQ_NO"]."',
+        //         '".$header["REQ_RECEIVING_DATE"]."',
+        //         '',
+        //         '',
+        //         NULL,
+        //         NULL,
+        //         NULL,
+        //         NULL,
+        //         NULL,
+        //         NULL,
+        //         ".$header["CANCELLED_STATUS"].",
+        //         '".$reffName."',
+        //         NULL,
+        //         NULL,
+        //         4,
+        //         '',
+        //         NULL,
+        //         NULL)");
+        // }
+
         }}
 
         if ($encode == "true") {
