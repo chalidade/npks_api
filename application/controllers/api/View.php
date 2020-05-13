@@ -741,9 +741,8 @@ class View extends BD_Controller {
             $newDt[$key] = $value;
             $newDt["STATUS"] = "MTY";
           }
+          $all[] = $newDt;
         }
-
-        $all[] = $newDt;
       }
 
       $out["count"]   = count($all);
