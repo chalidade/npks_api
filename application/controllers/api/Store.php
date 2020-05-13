@@ -214,6 +214,9 @@ class Store extends BD_Controller {
             REQUEST_EXTEND_FROM,
             REQUEST_EXTEND_LOOP,
             REQUEST_PAYMENT_METHOD,
+            REQUEST_VESSEL_NAME,
+            REQUEST_VESSEL_CODE,
+            REQUEST_VOYINOUT,
             REQUEST_ALIH_KAPAL
           )
           VALUES
@@ -231,6 +234,9 @@ class Store extends BD_Controller {
             '" . $PERP_DARI . "',
             " . $PERP_KE . ",
             " . $PAYMENT . ",
+            " . $vesselName . ",
+            " . $vesselCode . ",
+            " . $Voyinout . ",
             'Y'
           )";
 
@@ -675,6 +681,9 @@ class Store extends BD_Controller {
                                             STUFF_EXTEND_LOOP,
                                             STUFF_ORIGIN,
                                             STUFF_PAYMENT_METHOD,
+                                            STUFF_VESSEL_NAME,
+                                            STUFF_VESSEL_CODE,
+                                            STUFF_VOYINOUT,
                                             STUFF_STATUS
                                             )
                                           VALUES
@@ -694,6 +703,9 @@ class Store extends BD_Controller {
                                             ".$PERP_KE.",
                                             '".$STUFF_ORIGIN."',
                                             '".$PAYMENT."',
+                                            '".$vesselName."',
+                                            '".$vesselCode."',
+                                            '".$Voyinout."',
                                             '1'
                                             )
                                           ";
@@ -1030,6 +1042,9 @@ class Store extends BD_Controller {
                                         STRIP_NOREQ_RECEIVING,
                                         STRIP_EXTEND_FROM,STRIP_EXTEND_LOOP,
                                         STRIP_PAYMENT_METHOD,
+                                        STRIP_VESSEL_NAME,
+                                        STRIP_VESSEL_CODE,
+                                        STRIP_VOYINOUT,
                                         STRIP_ORIGIN
                                       )
                                       VALUES
@@ -1048,6 +1063,9 @@ class Store extends BD_Controller {
                                         '".$PERP_DARI."',
                                         ".$PERP_KE.",
                                         ".$PAYMENT.",
+                                        '".$vesselName."',
+                                        '".$vesselCode."',
+                                        '".$Voyinout."',
                                         '".$STRIP_DARI."'
                                       )";
 
@@ -1348,7 +1366,10 @@ class Store extends BD_Controller {
           "PLUG_CREATE_DATE"      => $header["PLUG_CREATE_DATE"],
           "PLUG_CREATE_BY"        => $header["PLUG_CREATE_BY"],
           "PLUG_STATUS"           => $header["PLUG_STATUS"],
-          "PLUG_PAYMENT_METHOD"   => $header["PAYMENT_METHOD"]
+          "PLUG_PAYMENT_METHOD"   => $header["PAYMENT_METHOD"],
+          "PLUG_VESSEL_NAME"      => $vesselName,
+          "PLUG_VESSEL_CODE"      => $vesselCode,
+          "PLUG_VOYINOUT"         => $Voyinout
         ];
 
         $head                     = $repodb->set($storeHeader)->get_compiled_insert('TX_REQ_PLUG_HDR');
@@ -1466,7 +1487,10 @@ class Store extends BD_Controller {
           "FUMI_CONSIGNEE_ID"     => $header["FUMI_CONSIGNEE_ID"],
           "FUMI_CREATE_DATE"      => $header["FUMI_CREATE_DATE"],
           "FUMI_CREATE_BY"        => $header["FUMI_CREATE_BY"],
-          "FUMI_PAYMENT_METHOD"   => $header["PAYMENT_METHOD"]
+          "FUMI_PAYMENT_METHOD"   => $header["PAYMENT_METHOD"],
+          "FUMI_VESSEL_NAME"      => $vesselName,
+          "FUMI_VESSEL_CODE"      => $vesselCode,
+          "FUMI_VOYINOUT"         => $Voyinout
         ];
 
         $head                     = $repodb->set($storeHeader)->get_compiled_insert('TX_REQ_FUMI_HDR');
@@ -1605,7 +1629,10 @@ class Store extends BD_Controller {
           "REQUEST_STATUS"        => $header["REQUEST_STATUS"],
           "REQUEST_DI"            => $header["REQUEST_DI"],
           "REQUEST_BRANCH_ID"     => $header["BRANCH_ID"],
-          "REQUEST_PAYMENT_METHOD"=> $header['PAYMENT_METHOD']
+          "REQUEST_PAYMENT_METHOD"=> $header['PAYMENT_METHOD'],
+          "REQUEST_VESSEL_NAME"   => $vesselName,
+          "REQUEST_VESSEL_CODE"   => $vesselCode,
+          "REQUEST_VOYINOUT"      => $Voyinout
         ];
 
         $head                     = $repodb->set($storeHeader)->get_compiled_insert('TX_REQ_RECEIVING_BRG_HDR');
@@ -1748,7 +1775,10 @@ class Store extends BD_Controller {
           "REQUEST_STATUS"        => $header["REQUEST_STATUS"],
           "REQUEST_DI"            => $header["REQUEST_DI"],
           "REQUEST_BRANCH_ID"     => $header["BRANCH_ID"],
-          "REQUEST_PAYMENT_METHOD"=> $header['PAYMENT_METHOD']
+          "REQUEST_PAYMENT_METHOD"=> $header['PAYMENT_METHOD'],
+          "REQUEST_VESSEL_NAME"   => $vesselName,
+          "REQUEST_VESSEL_CODE"   => $vesselCode,
+          "REQUEST_VOYINOUT"      => $Voyinout
         ];
 
 
@@ -1930,6 +1960,9 @@ class Store extends BD_Controller {
           REQUEST_FROM,
           REQUEST_STATUS,
           REQUEST_PAYMENT_METHOD,
+          REQUEST_VESSEL_NAME,
+          REQUEST_VESSEL_CODE,
+          REQUEST_VOYINOUT,
           REQUEST_DI
           )
           VALUES
@@ -1946,6 +1979,9 @@ class Store extends BD_Controller {
           '" . $RECEIVING_DARI . "',
           '1',
           '" . $PAYMENT . "',
+          '".$vesselName."',
+          '".$vesselCode."',
+          '".$Voyinout."',
           '" . $DI . "'
           )";
 
