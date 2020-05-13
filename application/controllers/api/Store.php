@@ -111,27 +111,6 @@ class Store extends BD_Controller {
                                     ->where('RENAMED_BRANCH_ID', $branch)
                                     ->update('TH_RENAMED');
 
-      // History Container
-      // $devdb->query("CALL INSERT_HISTORY_CONTAINER(
-      //         '" . $REQ_DTL_CONT . "',
-      //         '" . $REQ_NO . "',
-      //         '" . $REQ_DELIVERY_DATE . "',
-      //         '" . $REQ_DTL_SIZE . "',
-      //         '" . $REQ_DTL_TYPE . "',
-      //         '" . $REQ_DTL_CONT_STATUS . "',
-      //         NULL,
-      //         NULL,
-      //         NULL,
-      //         NULL,
-      //         NULL,
-      //         4,
-      //         'Request Delivery',
-      //         NULL,
-      //         NULL,
-      //         " . $branch . ",
-      //         NULL,
-      //         NULL)");
-
       $result   = [
         "BRANCH_ID" => $branch,
         "CONT_NO"   => $CONT_NO
@@ -168,6 +147,9 @@ class Store extends BD_Controller {
       $TANGGAL_LUNAS       = $header['TANGGAL_LUNAS'];
       $PERP_DARI           = $header['PERP_DARI'];
       $PERP_KE             = $header['PERP_KE'];
+      $vesselName          = $header['VESSEL_NAME'];
+      $vesselCode          = $header['VESSEL_CODE'];
+      $Voyinout            = $header['VOYIN']."/".$header['VOYOUT'];
 
 
       $sqlcek           = $repodb->where('REQ_BRANCH_ID', $branch)->where("REQ_NO", $REQ_NO)->get('TX_REQ_DELIVERY_HDR');
@@ -501,20 +483,24 @@ class Store extends BD_Controller {
         {
            "action" : "getReceiving",
            "header": {
-              "REQ_NO": "'.$header["TL_NO"].'",
-              "TL" : "true",
-              "REQ_RECEIVING_DATE": "'.$header["TL_CREATE_DATE"].'",
-              "NO_NOTA": "'.$header["TL_NOTA"].'",
-              "TGL_NOTA": "'.$header["TL_DATE"].'",
-              "NM_CONSIGNEE": "'.$header["TL_CUST_NAME"].'",
-              "ALAMAT": "'.$header["TL_CUST_ADDRESS"].'",
-              "REQ_MARK": "'.$header["TL_MSG"].'",
-              "NPWP": "'.$header["TL_CUST_NPWP"].'",
-              "RECEIVING_DARI": "'.$header["TL_FROM"].'",
-              "TANGGAL_LUNAS": "'.$header["TL_CORRECTION_DATE"].'",
-              "DI": "'.$header["TL_NO"].'",
-              "PAYMENT_METHOD": "'.$header["TL_PAYMETHOD"].'",
-              "BRANCH_ID": "'.$header["BRANCH_ID"].'"
+              "REQ_NO"                  : "'.$header["TL_NO"].'",
+              "TL"                      : "true",
+              "REQ_RECEIVING_DATE"      : "'.$header["TL_CREATE_DATE"].'",
+              "NO_NOTA"                 : "'.$header["TL_NOTA"].'",
+              "TGL_NOTA"                : "'.$header["TL_DATE"].'",
+              "NM_CONSIGNEE"            : "'.$header["TL_CUST_NAME"].'",
+              "ALAMAT"                  : "'.$header["TL_CUST_ADDRESS"].'",
+              "REQ_MARK"                : "'.$header["TL_MSG"].'",
+              "NPWP"                    : "'.$header["TL_CUST_NPWP"].'",
+              "RECEIVING_DARI"          : "'.$header["TL_FROM"].'",
+              "TANGGAL_LUNAS"           : "'.$header["TL_CORRECTION_DATE"].'",
+              "DI"                      : "'.$header["TL_NO"].'",
+              "PAYMENT_METHOD"          : "'.$header["TL_PAYMETHOD"].'",
+              "VESSEL_NAME"							: "'.$header['VESSEL_NAME'].'",
+							"VESSEL_CODE"							: "'.$header['VESSEL_CODE'].'",
+							"VOYIN"										: "'.$header['VOYIN'].'",
+							"VOYOUT"									: "'.$header['VOYOUT'].'",
+              "BRANCH_ID"               : "'.$header["BRANCH_ID"].'"
            },
            "arrdetail": ['.$arrdetilRec.']
             }';
@@ -553,21 +539,25 @@ class Store extends BD_Controller {
           "action" : "getDelivery",
           "header":
           {
-          "REQ_NO": "'.$header["TL_NO"].'",
-          "TL" : "true",
-          "REQ_DELIVERY_DATE": "'.$header["TL_CREATE_DATE"].'",
-          "NO_NOTA": "'.$header["TL_NOTA"].'",
-          "TGL_NOTA": "'.$header["TL_DATE"].'",
-          "NM_CONSIGNEE": "'.$header["TL_CUST_NAME"].'",
-          "ALAMAT": "'.$header["TL_CUST_ADDRESS"].'",
-          "REQ_MARK": "'.$header["TL_MSG"].'",
-          "NPWP": "'.$header["TL_CUST_NPWP"].'",
-          "DELIVERY_KE": "'.$header["TL_TO"].'",
-          "TANGGAL_LUNAS": "'.$header["TL_CORRECTION_DATE"].'",
-          "PERP_DARI": "",
-          "PERP_KE": "",
-          "PAYMENT_METHOD": "'.$header["TL_PAYMETHOD"].'",
-          "BRANCH_ID": "'.$header["BRANCH_ID"].'"
+          "REQ_NO"                  : "'.$header["TL_NO"].'",
+          "TL"                      : "true",
+          "REQ_DELIVERY_DATE"       : "'.$header["TL_CREATE_DATE"].'",
+          "NO_NOTA"                 : "'.$header["TL_NOTA"].'",
+          "TGL_NOTA"                : "'.$header["TL_DATE"].'",
+          "NM_CONSIGNEE"            : "'.$header["TL_CUST_NAME"].'",
+          "ALAMAT"                  : "'.$header["TL_CUST_ADDRESS"].'",
+          "REQ_MARK"                : "'.$header["TL_MSG"].'",
+          "NPWP"                    : "'.$header["TL_CUST_NPWP"].'",
+          "DELIVERY_KE"             : "'.$header["TL_TO"].'",
+          "TANGGAL_LUNAS"           : "'.$header["TL_CORRECTION_DATE"].'",
+          "PERP_DARI"               : "",
+          "PERP_KE"                 : "",
+          "PAYMENT_METHOD"          : "'.$header["TL_PAYMETHOD"].'",
+          "VESSEL_NAME"							: "'.$header['VESSEL_NAME'].'",
+          "VESSEL_CODE"							: "'.$header['VESSEL_CODE'].'",
+          "VOYIN"										: "'.$header['VOYIN'].'",
+          "VOYOUT"									: "'.$header['VOYOUT'].'",
+          "BRANCH_ID"               : "'.$header["BRANCH_ID"].'"
           },
           "arrdetail": ['.$arrdetilDel.']
            }';
@@ -616,6 +606,9 @@ class Store extends BD_Controller {
       $STUFFING_DARI                    = $header['STUFFING_DARI'];
       $PERP_DARI                        = $header['PERP_DARI'];
       $PERP_KE                          = $header['PERP_KE'];
+      $vesselName                       = $header['VESSEL_NAME'];
+      $vesselCode                       = $header['VESSEL_CODE'];
+      $Voyinout                         = $header['VOYIN']."/".$header['VOYOUT'];
 
       if(empty($PERP_KE)) $PERP_KE      = 0;
 
@@ -974,6 +967,9 @@ class Store extends BD_Controller {
       $NPWP                         =  str_replace(".", "",str_replace("-", "", trim($header['NPWP'])));
       $ALAMAT                       = $header['ALAMAT'];
       $TANGGAL_LUNAS                = $header['TANGGAL_LUNAS'];
+      $vesselName                   = $header['VESSEL_NAME'];
+      $vesselCode                   = $header['VESSEL_CODE'];
+      $Voyinout                     = $header['VOYIN']."/".$header['VOYOUT'];
 
       if(empty($PERP_KE)) $PERP_KE  = 0;
 
@@ -1303,6 +1299,9 @@ class Store extends BD_Controller {
       $repodb                     = $this->reponpks;
       $header                     = $input["header"];
       $detail                     = $input["arrdetail"];
+      $vesselName                 = $header['VESSEL_NAME'];
+      $vesselCode                 = $header['VESSEL_CODE'];
+      $Voyinout                   = $header['VOYIN']."/".$header['VOYOUT'];
 
       $query                      = $repodb->where("PLUG_NO", $header["PLUG_NO"])->get('TX_REQ_PLUG_HDR');
       $resultQuery                = $query->result_array();
@@ -1422,6 +1421,9 @@ class Store extends BD_Controller {
       $repodb                     = $this->reponpks;
       $header                     = $input["header"];
       $detail                     = $input["arrdetail"];
+      $vesselName                 = $header['VESSEL_NAME'];
+      $vesselCode                 = $header['VESSEL_CODE'];
+      $Voyinout                   = $header['VOYIN']."/".$header['VOYOUT'];
 
       $query                      = $repodb->where("FUMI_NO", $header["FUMI_NO"])->get('TX_REQ_FUMI_HDR');
       $resultQuery                = $query->result_array();
@@ -1538,6 +1540,9 @@ class Store extends BD_Controller {
       $repodb                     = $this->reponpks;
       $header                     = $input["header"];
       $detail                     = $input["arrdetail"];
+      $vesselName                 = $header['VESSEL_NAME'];
+      $vesselCode                 = $header['VESSEL_CODE'];
+      $Voyinout                   = $header['VOYIN']."/".$header['VOYOUT'];
 
       $query                      = $repodb->where("REQUEST_NO", $header["REQUEST_NO"])->get('TX_REQ_RECEIVING_BRG_HDR');
       $resultQuery                = $query->result_array();
@@ -1660,25 +1665,6 @@ class Store extends BD_Controller {
                 '".$detail["REQUEST_DTL_VESSEL_NAME"]."',
                 ".$branch.",
                 NULL)");
-
-          // $storeHistory  = [
-          //   "HIST_SI"         => $detail["REQUEST_DTL_SI"],
-          //   "HIST_BRANCH_ID"  => $branch,
-          //   "HIST_COUNTER"    => "",
-          //   "HIST_STORAGE"    => $detail["REQUEST_DTL_TOTAL"],
-          //   "HIST_ACTIVITY_ID"=> "1",
-          //   "HIST_ACTIVITY"   => $reffName,
-          //   "HIST_DATE"       => date('d-M-Y', strtotime($header["REQUEST_CREATE_DATE"])),
-          //   "HIST_NOREQ"      => $header["REQ_NO"],
-          //   "HIST_DATE_REQ"   => date('d-M-Y', strtotime($header["REQUEST_RECEIVING_DATE"])),
-          //   "HIST_TOTAL"      => $detail["REQUEST_DTL_TOTAL"],
-          //   "HIST_IN"         => $detail["REQUEST_DTL_TOTAL"],
-          //   "HIST_OUT"        => "",
-          //   "HIST_USER"       => ""
-          // ];
-          //
-          // $historyBrg               = $devdb->set($storeHistory)->get_compiled_insert('TH_HISTORY_BRG');
-          // $queryHistory             = $devdb->query($historyBrg);
         }
       }
 
@@ -1696,6 +1682,9 @@ class Store extends BD_Controller {
       $repodb                     = $this->reponpks;
       $header                     = $input["header"];
       $detail                     = $input["arrdetail"];
+      $vesselName                 = $header['VESSEL_NAME'];
+      $vesselCode                 = $header['VESSEL_CODE'];
+      $Voyinout                   = $header['VOYIN']."/".$header['VOYOUT'];
 
       $query                      = $repodb->where("REQUEST_NO", $header["REQUEST_NO"])->get('TX_REQ_DELIVERY_BRG_HDR');
       $resultQuery                = $query->result_array();
@@ -1869,6 +1858,10 @@ class Store extends BD_Controller {
       $RECEIVING_DARI     = $header['RECEIVING_DARI'];
       $TANGGAL_LUNAS      = $header['TANGGAL_LUNAS'];
       $DI                 = $header['DI'];
+      $vesselName         = $header['VESSEL_NAME'];
+      $vesselCode         = $header['VESSEL_CODE'];
+      $Voyinout           = $header['VOYIN']."/".$header['VOYOUT'];
+
 
       if ((strtolower($DI) == 'domestik' or strtolower($DI) == 'd')) {
         $DI = 'D';
