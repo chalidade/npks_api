@@ -185,7 +185,11 @@ class View extends BD_Controller {
       $this->auth_basic();
       $devdb           = $this->db;
       $repodb          = $this->reponpks;
-      $sqlgetIn        = $repodb->where("RENAMED_STATUS","0")->get('TH_RENAMED');
+      $sqlgetIn        = $repodb->where("RENAMED_STATUS","0")
+                                ->where('RENAMED_NOREQ', $input["no_req"])
+                                ->where('RENAMED_CONT_OLD', $input["no_cont"])
+                                ->where('RENAMED_BRANCH_ID', $input["branch_id"])
+                                ->get('TH_RENAMED');
       $resultservices  = $sqlgetIn->result_array();
 
 
