@@ -468,7 +468,7 @@ class Store extends BD_Controller {
               "REQ_DTL_VOYIN" : "'.$header["TL_VOYIN"].'",
               "REQ_DTL_VOYOUT" : "'.$header["TL_VOYOUT"].'",
               "REQ_DTL_VIA_ID" : "'.$dtlRec["TL_DTL_REC_VIA"].'",
-              "REQ_DTL_CONT_STATUS": "'.$dtlRec["TL_DTL_CONT_TYPE"].'",
+              "REQ_DTL_CONT_STATUS": "'.$dtlRec["TL_DTL_CONT_STATUS"].'",
               "REQ_DTL_COMMODITY": "'.$dtlRec["TL_DTL_CMDTY_NAME"].'",
               "REQ_DTL_VIA_NAME": "'.$dtlRec["TL_DTL_VIA_REC_NAME"].'",
               "REQ_DTL_VIA_ID": "'.$dtlRec["TL_DTL_REC_VIA"].'",
@@ -500,10 +500,10 @@ class Store extends BD_Controller {
               "TANGGAL_LUNAS"           : "'.$header["TL_CORRECTION_DATE"].'",
               "DI"                      : "'.$header["TL_NO"].'",
               "PAYMENT_METHOD"          : "'.$header["TL_PAYMETHOD"].'",
-              "VESSEL_NAME"							: "'.$header['VESSEL_NAME'].'",
-							"VESSEL_CODE"							: "'.$header['VESSEL_CODE'].'",
-							"VOYIN"										: "'.$header['VOYIN'].'",
-							"VOYOUT"									: "'.$header['VOYOUT'].'",
+              "VESSEL_NAME"							: "'.$header['TL_VESSEL_NAME'].'",
+							"VESSEL_CODE"							: "'.$header['TL_VESSEL_CODE'].'",
+							"VOYIN"										: "'.$header['TL_VOYIN'].'",
+							"VOYOUT"									: "'.$header['TL_VOYOUT'].'",
               "BRANCH_ID"               : "'.$header["BRANCH_ID"].'"
            },
            "arrdetail": ['.$arrdetilRec.']
@@ -518,7 +518,7 @@ class Store extends BD_Controller {
          $arrdetilDel .= '
          {
               "REQ_DTL_CONT": "'.$dtlDel["TL_DTL_CONT"].'",
-              "REQ_DTL_CONT_STATUS": "'.$dtlDel["TL_DTL_CONT_TYPE"].'",
+              "REQ_DTL_CONT_STATUS": "'.$dtlDel["TL_DTL_CONT_STATUS"].'",
               "REQ_DTL_VESSEL_NAME" : "'.$header["TL_VESSEL_NAME"].'",
               "REQ_DTL_VESSEL_CODE" : "'.$header["TL_VESSEL_CODE"].'",
               "REQ_DTL_VOYIN" : "'.$header["TL_VOYIN"].'",
@@ -557,10 +557,10 @@ class Store extends BD_Controller {
           "PERP_DARI"               : "",
           "PERP_KE"                 : "",
           "PAYMENT_METHOD"          : "'.$header["TL_PAYMETHOD"].'",
-          "VESSEL_NAME"							: "'.$header['VESSEL_NAME'].'",
-          "VESSEL_CODE"							: "'.$header['VESSEL_CODE'].'",
-          "VOYIN"										: "'.$header['VOYIN'].'",
-          "VOYOUT"									: "'.$header['VOYOUT'].'",
+          "VESSEL_NAME"							: "'.$header['TL_VESSEL_NAME'].'",
+          "VESSEL_CODE"							: "'.$header['TL_VESSEL_CODE'].'",
+          "VOYIN"										: "'.$header['TL_VOYIN'].'",
+          "VOYOUT"									: "'.$header['TL_VOYOUT'].'",
           "BRANCH_ID"               : "'.$header["BRANCH_ID"].'"
           },
           "arrdetail": ['.$arrdetilDel.']
@@ -1391,7 +1391,7 @@ class Store extends BD_Controller {
                   '" . $recDate . "',
                   '" . $detail["PLUG_DTL_CONT_SIZE"] . "',
                   '',
-                  '" . $detail["PLUG_DTL_STATUS"] . "',
+                  '" . $detail["PLUG_DTL_CONT_STATUS"] . "',
                   NULL,
                   NULL,
                   NULL,

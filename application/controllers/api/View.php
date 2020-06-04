@@ -624,7 +624,7 @@ class View extends BD_Controller {
                                              ->where("REAL_FUMI_NOREQ",$data["NO_REQUEST"])
                                              ->where("REAL_FUMI_BRANCH_ID",$data["BRANCH_ID"])
                                              ->where("REAL_FUMI_STATUS","2")
-                                             ->select("TX_REAL_FUMI.*,  TO_CHAR(REAL_FUMI_DATE,'YYYY-MM-DD HH24:MI:SS') as REAL_FUMI, REAL_FUMI_CONT as NO_CONTAINER, REAL_FUMI_NOREQ as NO_REQUEST")
+                                             ->select("TX_REAL_FUMI.*,  TO_CHAR(REAL_FUMI_DATE,'YYYY-MM-DD HH24:MI:SS') as REAL_FUMI, REAL_FUMI_CONT as NO_CONTAINER, REAL_FUMI_NOREQ as NO_REQUEST, REAL_FUMI_STATUS as STATUS")
                                              ->order_by("REAL_FUMI_DATE", "ASC")
                                              ->get("TX_REAL_FUMI");
 
