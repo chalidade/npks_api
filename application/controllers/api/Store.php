@@ -127,7 +127,7 @@ class Store extends BD_Controller {
 
     }
 
-    function getDelivery_post($input, $branch, $encode) {
+    function getDelivery_post($input, $branch, $encode, $response) {
       $this->auth_basic();
       //header
       $devdb               = $this->db;
@@ -391,27 +391,50 @@ class Store extends BD_Controller {
               }
             }
 
-            $devdb->query("CALL INSERT_HISTORY_CONTAINER(
-                    '" . $REQ_DTL_CONT . "',
-                    '" . $REQ_NO . "',
-                    '" . $REQ_DELIVERY_DATE . "',
-                    '" . $REQ_DTL_SIZE . "',
-                    '" . $REQ_DTL_TYPE . "',
-                    '" . $REQ_DTL_CONT_STATUS . "',
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    4,
-                    'Request Delivery',
-                    NULL,
-                    NULL,
-                    " . $branch . ",
-                    NULL,
-                    '".$val['REQ_DTL_CONT_HAZARD']."',
-                    NULL)
-                    ");
+            //get container location
+            	$cont_loc = $devdb->select('A.REAL_YARD_CONT CONT, D.YARD_NAME YARD_, C.BLOCK_NAME BLOCK_, B.YBC_SLOT SLOT_, B.YBC_ROW ROW_, A.REAL_YARD_TIER TIER_, A.REAL_YARD_CONT_SIZE SIZE_')
+            						 ->from('TX_REAL_YARD A')
+            						 ->join('TX_YARD_BLOCK_CELL B','B.YBC_ID = A.REAL_YARD_YBC_ID')
+            						 ->join('TM_BLOCK C','C.BLOCK_ID = B.YBC_BLOCK_ID')
+            						 ->join('TM_YARD D','D.YARD_ID = C.BLOCK_YARD_ID')
+            						 ->where('A.REAL_YARD_USED',1)
+            						 ->where('A.REAL_YARD_CONT',$REQ_DTL_CONT)
+            						 ->order_by('B.YBC_SLOT','DESC')
+            						 ->get()->row_array();
+
+            	$yard_   = $cont_loc['YARD_'];
+            	$block_  = $cont_loc['BLOCK_'];
+            	$slot_   = $cont_loc['SLOT_'];
+            	$row_    = $cont_loc['ROW_'];
+            	$tier_   = $cont_loc['TIER_'];
+            	$ext     = '';
+            	if($cont_loc['SIZE_'] == 40){
+            		$ext = $cont_loc['SLOT_'] - 1;
+            	}
+
+            	//insert history container
+              $devdb->query("CALL INSERT_HISTORY_CONTAINER(
+                      '" . $REQ_DTL_CONT . "',
+                      '" . $REQ_NO . "',
+                      '" . $REQ_DELIVERY_DATE . "',
+                      '" . $REQ_DTL_SIZE . "',
+                      '" . $REQ_DTL_TYPE . "',
+                      '" . $REQ_DTL_CONT_STATUS . "',
+                      '".$yard_."',
+                      '".$block_."',
+                      '".$slot_."',
+                      '".$row_."',
+                      '".$tier_."',
+                      4,
+                      'Request Delivery',
+                      NULL,
+                      '".$ext."',
+                      " . $branch . ",
+                      NULL,
+                      '".$val['REQ_DTL_CONT_HAZARD']."',
+                      NULL)
+                      ");
+
           } else {
             $result["DETAIL"][] = [
               "REQ_DTL_CONT"               => $val['REQ_DTL_CONT'],
@@ -428,6 +451,32 @@ class Store extends BD_Controller {
       }
 
       // JSON Response
+      if (isset($response) AND !empty($response)) {
+        if ($encode == "true") {
+          $out["result"] = base64_encode(json_encode($result));
+          return json_encode($out);
+        } else {
+          return json_encode($result);
+        }
+      } else {
+        header('Content-Type: application/json');
+        if ($encode == "true") {
+          $out["result"] = base64_encode(json_encode($result));
+          echo json_encode($out);
+        } else {
+          echo json_encode($result);
+        }
+      }
+    }
+
+    function getRecStuffing_post($input, $branch, $encode){
+      $this->auth_basic();
+      $rec                  = $this->getReceiving_post($input, $branch, $encode, "true");
+      $stuff                = $this->getStuffing_post($input, $branch, $encode, "true");
+      $result["receiving"]  = json_decode($rec, TRUE);
+      $result["stuffing"]   = json_decode($stuff, TRUE);
+
+      // JSON Response
       header('Content-Type: application/json');
       if ($encode == "true") {
         $out["result"] = base64_encode(json_encode($result));
@@ -437,18 +486,21 @@ class Store extends BD_Controller {
       }
     }
 
-    function getRecStuffing_post($input, $branch, $encode){
-      $this->auth_basic();
-      $this->getReceiving_post($input, $branch, $encode);
-      $this->getStuffing_post($input, $branch, $encode);
-      // buatkan funct returnnya
-    }
-
     function getRecStripping_post($input, $branch, $encode){
       $this->auth_basic();
-      $this->getReceiving_post($input, $branch, $encode);
-      $this->getStripping_post($input, $branch, $encode);
-      // buatkan funct returnnya
+      $rec                  = $this->getReceiving_post($input, $branch, $encode, "true");
+      $strip                = $this->getStripping_post($input, $branch, $encode, "true");
+      $result["receiving"]  = json_decode($rec, TRUE);
+      $result["stripping"]  = json_decode($strip, TRUE);
+
+      // JSON Response
+      header('Content-Type: application/json');
+      if ($encode == "true") {
+        $out["result"] = base64_encode(json_encode($result));
+        echo json_encode($out);
+      } else {
+        echo json_encode($result);
+      }
     }
 
     // bELUM
@@ -570,11 +622,11 @@ class Store extends BD_Controller {
       // End Delivery
 
       $this->auth_basic();
-      $realRec = $this->getReceiving_post($inputReceiving, $branch, $encode);
-      $realDel = $this->getDelivery_post($inputDelivery, $branch, $encode);
+      $realRec = $this->getReceiving_post($inputReceiving, $branch, $encode, "true");
+      $realDel = $this->getDelivery_post($inputDelivery, $branch, $encode, "true");
 
-      $result["realRec"] = $realRec;
-      $result["realDel"] = $realDel;
+      $result["realRec"] = json_decode($realRec, TRUE);
+      $result["realDel"] = json_decode($realDel, TRUE);
 
       // JSON Response
       header('Content-Type: application/json');
@@ -586,7 +638,7 @@ class Store extends BD_Controller {
       }
     }
 
-    function getStuffing_post($input, $branch, $encode) {
+    function getStuffing_post($input, $branch, $encode, $response) {
       $this->auth_basic();
       $devdb                            = $this->db;
       $repodb                           = $this->reponpks;
@@ -943,16 +995,25 @@ class Store extends BD_Controller {
       }
 
       // JSON Response
-      header('Content-Type: application/json');
-      if ($encode == "true") {
-        $out["result"] = base64_encode(json_encode($result));
-        echo json_encode($out);
+      if (isset($response) AND !empty($response)) {
+        if ($encode == "true") {
+          $out["result"] = base64_encode(json_encode($result));
+          return json_encode($out);
+        } else {
+          return json_encode($result);
+        }
       } else {
-        echo json_encode($result);
+        header('Content-Type: application/json');
+        if ($encode == "true") {
+          $out["result"] = base64_encode(json_encode($result));
+          echo json_encode($out);
+        } else {
+          echo json_encode($result);
+        }
       }
     }
 
-    function getStripping_post($input, $branch, $encode) {
+    function getStripping_post($input, $branch, $encode, $response) {
       // Initialization
       $this->auth_basic();
       $devdb                        = $this->db;
@@ -1301,12 +1362,21 @@ class Store extends BD_Controller {
       }
 
       // JSON Response
-      header('Content-Type: application/json');
-      if ($encode == "true") {
-        $out["result"] = base64_encode(json_encode($result));
-        echo json_encode($out);
+      if (isset($response) AND !empty($response)) {
+        if ($encode == "true") {
+          $out["result"] = base64_encode(json_encode($result));
+          return json_encode($out);
+        } else {
+          return json_encode($result);
+        }
       } else {
-        echo json_encode($result);
+        header('Content-Type: application/json');
+        if ($encode == "true") {
+          $out["result"] = base64_encode(json_encode($result));
+          echo json_encode($out);
+        } else {
+          echo json_encode($result);
+        }
       }
     }
 
@@ -1874,7 +1944,7 @@ class Store extends BD_Controller {
       }
 
     // Done
-    function getReceiving_post($input, $branch, $encode) {
+    function getReceiving_post($input, $branch, $encode, $response) {
       $this->auth_basic();
       //header
       $header             = $input['header'];
@@ -2173,12 +2243,21 @@ class Store extends BD_Controller {
   			//end call nodejs
 
         // JSON Response
-        header('Content-Type: application/json');
-        if ($encode == "true") {
-          $out["result"] = base64_encode(json_encode($result));
-          echo json_encode($out);
+        if (isset($response) AND !empty($response)) {
+          if ($encode == "true") {
+            $out["result"] = base64_encode(json_encode($result));
+            return json_encode($out);
+          } else {
+            return json_encode($result);
+          }
         } else {
-          echo json_encode($result);
+          header('Content-Type: application/json');
+          if ($encode == "true") {
+            $out["result"] = base64_encode(json_encode($result));
+            echo json_encode($out);
+          } else {
+            echo json_encode($result);
+          }
         }
       }
 
@@ -2461,7 +2540,7 @@ class Store extends BD_Controller {
             $update                 = $repodb->set("REQ_DTL_ACTIVE", "T")->set("REQ_DTL_STATUS", "2")->where('REQ_DTL_CONT', $noContainer)->where('REQ_HDR_ID', $hdrId)->update('TX_REQ_DELIVERY_DTL');
 
             $cek_jumlah_dtl         = $repodb->where('REQ_HDR_ID',$hdrId)->from('TX_REQ_DELIVERY_DTL')->count_all_results();
-            $cek_jumlah_out         = $repodb->where('REQ_HDR_ID',$hdrId)->where('REQ_DTL_CANCELLED','Y')->where('REQ_DTL_STATUS', '2')->from('TX_REQ_DELIVERY_DTL')->count_all_results();
+            $cek_jumlah_out         = $repodb->where('REQ_HDR_ID',$hdrId)->where('REQ_DTL_STATUS', '2')->from('TX_REQ_DELIVERY_DTL')->count_all_results();
 
             if($cek_jumlah_out == $cek_jumlah_dtl){
               $repodb->set('REQUEST_STATUS',2)->where('REQ_ID',$hdrId)->update('TX_REQ_DELIVERY_HDR');
@@ -2474,7 +2553,7 @@ class Store extends BD_Controller {
             $update                 = $repodb->set("REQUEST_DTL_CANCELLED", "Y")->set("REQUEST_DTL_STATUS", "2")->where('REQUEST_DTL_CONT', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_RECEIVING_DTL');
 
             $cek_jumlah_dtl         = $repodb->where('REQUEST_HDR_ID',$hdrId)->from('TX_REQ_RECEIVING_DTL')->count_all_results();
-            $cek_jumlah_out         = $repodb->where('REQUEST_HDR_ID',$hdrId)->where('REQUEST_DTL_CANCELLED','Y')->where('REQUEST_DTL_STATUS', '2')->from('TX_REQ_RECEIVING_DTL')->count_all_results();
+            $cek_jumlah_out         = $repodb->where('REQUEST_HDR_ID',$hdrId)->where('REQUEST_DTL_STATUS', '2')->from('TX_REQ_RECEIVING_DTL')->count_all_results();
 
             if($cek_jumlah_out == $cek_jumlah_dtl){
               $repodb->set('REQUEST_STATUS',2)->where('REQUEST_ID',$hdrId)->update('TX_REQ_RECEIVING_HDR');
@@ -2598,11 +2677,11 @@ class Store extends BD_Controller {
             $hdrId                  = $hdrData[0]["REQUEST_ID"];
             $update                 = $repodb->set("REQUEST_DTL_CANCELLED", "Y")->where('REQUEST_DTL_CONT', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_RECEIVING_DTL');
 
-            $cek_jumlah_dtl         = $repodb->where('REQUEST_HDR_ID',$hdrId)->from('TX_REQ_DELIVERY_DTL')->count_all_results();
-						$cek_jumlah_out         = $repodb->where('REQUEST_HDR_ID',$hdrId)->where('REQUEST_DTL_CANCELLED','Y')->from('TX_REQ_DELIVERY_DTL')->count_all_results();
+            $cek_jumlah_dtl         = $repodb->where('REQUEST_HDR_ID',$hdrId)->from('TX_REQ_RECEIVING_DTL')->count_all_results();
+						$cek_jumlah_out         = $repodb->where('REQUEST_HDR_ID',$hdrId)->where('REQUEST_DTL_STATUS', '2')->from('TX_REQ_RECEIVING_DTL')->count_all_results();
 
             if($cek_jumlah_out == $cek_jumlah_dtl){
-							$repodb->set('REQUEST_STATUS',2)->where('REQUEST_HDR_ID',$hdrId)->update('TX_REQ_DELIVERY_HDR');
+							$repodb->set('REQUEST_STATUS',2)->where('REQUEST_HDR_ID',$hdrId)->update('TX_REQ_RECEIVING_HDR');
 						}
 
           } else if($header["CANCELLED_STATUS"] == 24) {
@@ -2625,11 +2704,11 @@ class Store extends BD_Controller {
             $hdrId                  = $hdrData[0]["REQUEST_ID"];
             $update                 = $repodb->set("REQUEST_DTL_CANCELLED", "Y")->where('REQUEST_DTL_CONT', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_RECEIVING_DTL');
 
-            $cek_jumlah_dtl         = $repodb->where('REQUEST_HDR_ID',$hdrId)->from('TX_REQ_DELIVERY_DTL')->count_all_results();
-						$cek_jumlah_out         = $repodb->where('REQUEST_HDR_ID',$hdrId)->where('REQUEST_DTL_CANCELLED','Y')->from('TX_REQ_DELIVERY_DTL')->count_all_results();
+            $cek_jumlah_dtl         = $repodb->where('REQUEST_HDR_ID',$hdrId)->from('TX_REQ_RECEIVING_DTL')->count_all_results();
+						$cek_jumlah_out         = $repodb->where('REQUEST_HDR_ID',$hdrId)->where('REQUEST_DTL_STATUS', '2')->from('TX_REQ_RECEIVING_DTL')->count_all_results();
 
             if($cek_jumlah_out == $cek_jumlah_dtl){
-							$repodb->set('REQUEST_STATUS',2)->where('REQUEST_HDR_ID',$hdrId)->update('TX_REQ_DELIVERY_HDR');
+							$repodb->set('REQUEST_STATUS',2)->where('REQUEST_HDR_ID',$hdrId)->update('TX_REQ_RECEIVING_HDR');
 						}
           }  else if($header["CANCELLED_STATUS"] == 25) {
             // Batal Striping
@@ -2651,11 +2730,11 @@ class Store extends BD_Controller {
             $hdrId                  = $hdrData[0]["REQUEST_ID"];
             $update                 = $repodb->set("REQUEST_DTL_CANCELLED", "Y")->where('REQUEST_DTL_CONT', $noContainer)->where('REQUEST_HDR_ID', $hdrId)->update('TX_REQ_RECEIVING_DTL');
 
-            $cek_jumlah_dtl         = $repodb->where('REQUEST_HDR_ID',$hdrId)->from('TX_REQ_DELIVERY_DTL')->count_all_results();
-						$cek_jumlah_out         = $repodb->where('REQUEST_HDR_ID',$hdrId)->where('REQUEST_DTL_CANCELLED','Y')->from('TX_REQ_DELIVERY_DTL')->count_all_results();
+            $cek_jumlah_dtl         = $repodb->where('REQUEST_HDR_ID',$hdrId)->from('TX_REQ_RECEIVING_DTL')->count_all_results();
+						$cek_jumlah_out         = $repodb->where('REQUEST_HDR_ID',$hdrId)->where('REQUEST_DTL_CANCELLED','Y')->from('TX_REQ_RECEIVING_DTL')->count_all_results();
 
             if($cek_jumlah_out == $cek_jumlah_dtl){
-							$repodb->set('REQUEST_STATUS',2)->where('REQUEST_HDR_ID',$hdrId)->update('TX_REQ_DELIVERY_HDR');
+							$repodb->set('REQUEST_STATUS',2)->where('REQUEST_HDR_ID',$hdrId)->update('TX_REQ_RECEIVING_HDR');
 						}
           }
 

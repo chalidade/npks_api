@@ -462,62 +462,62 @@ class View extends BD_Controller {
     }
 
     function generateGetOut_post($input, $branch, $encode) {
-      // Initialization
-      header('Content-Type: application/json');
-      $this->auth_basic();
-      $devdb                        = $this->db;
-      $repodb                       = $this->reponpks;
-      $data                         = $input["data"];
+        // Initialization
+        header('Content-Type: application/json');
+        $this->auth_basic();
+        $devdb                        = $this->db;
+        $repodb                       = $this->reponpks;
+        $data                         = $input["data"];
 
-      $newdt                        = [];
+        $newdt                        = [];
 
-      foreach ($data as $data) {
-        $sqlgetOut                  = $repodb->select("
-                                                        A.GATE_ID,
-                                                        A.GATE_CONT AS NO_CONTAINER,
-                                                        A.GATE_NOREQ AS NO_REQUEST,
-                                                        TO_CHAR(B.REQ_DELIVERY_DATE,'MM/DD/YYYY HH24:MI:SS') AS TGL_REQ_DELIVERY,
-                                                        A.GATE_TRUCK_NO AS NOPOL,
-                                                        A.GATE_CREATE_BY,
-                                                        TO_CHAR(A.GATE_CREATE_DATE,'MM/DD/YYYY HH24:MI:SS') AS TGL_OUT,
-                                                        GATE_CONT_STATUS AS STATUS,
-                                                        GATE_ORIGIN AS GATE_DESTINATION,
-                                                        A.GATE_NO_SEAL AS NO_SEAL,
-                                                        A.GATE_MARK AS MARK
-                                                        ")
-                                               ->join('TX_REQ_DELIVERY_HDR B', 'B.REQ_NO = A.GATE_NOREQ')
-                                               ->where("GATE_ACTIVITY","4")
-                                               ->where("GATE_STATUS","3")
-                                               ->where("GATE_CONT",$data["NO_CONTAINER"])
-                                               ->where("GATE_NOREQ",$data["NO_REQUEST"])
-                                               ->where("GATE_BRANCH_ID",$data["BRANCH_ID"])
-                                               ->where("GATE_ORIGIN","DEPO")
-                                               ->order_by("GATE_CREATE_DATE", "ASC")
-                                               ->get("TX_GATE A");
-        $resultservices               = $sqlgetOut->result_array();
+        foreach ($data as $data) {
+          $sqlgetOut                  = $repodb->select("
+                                                          A.GATE_ID,
+                                                          A.GATE_CONT AS NO_CONTAINER,
+                                                          A.GATE_NOREQ AS NO_REQUEST,
+                                                          TO_CHAR(B.REQ_DELIVERY_DATE,'MM/DD/YYYY HH24:MI:SS') AS TGL_REQ_DELIVERY,
+                                                          A.GATE_TRUCK_NO AS NOPOL,
+                                                          A.GATE_CREATE_BY,
+                                                          TO_CHAR(A.GATE_CREATE_DATE,'MM/DD/YYYY HH24:MI:SS') AS TGL_OUT,
+                                                          GATE_CONT_STATUS AS STATUS,
+                                                          GATE_ORIGIN AS GATE_DESTINATION,
+                                                          A.GATE_NO_SEAL AS NO_SEAL,
+                                                          A.GATE_MARK AS MARK
+                                                          ")
+                                                 ->join('TX_REQ_DELIVERY_HDR B', 'B.REQ_NO = A.GATE_NOREQ')
+                                                 ->where("GATE_ACTIVITY","4")
+                                                 ->where("GATE_STATUS","3")
+                                                 ->where("GATE_CONT",$data["NO_CONTAINER"])
+                                                 ->where("GATE_NOREQ",$data["NO_REQUEST"])
+                                                 ->where("GATE_BRANCH_ID",$data["BRANCH_ID"])
+                                                 ->where("GATE_ORIGIN","DEPO")
+                                                 ->order_by("GATE_CREATE_DATE", "ASC")
+                                                 ->get("TX_GATE A");
+          $resultservices               = $sqlgetOut->result_array();
 
-        $data_view = json_encode($resultservices);
-        $data_use  = json_decode($data_view);
+          $data_view = json_encode($resultservices);
+          $data_use  = json_decode($data_view);
 
-        foreach ($data_use as $value) {
-          $newdt[] = $value;
+          foreach ($data_use as $value) {
+            $newdt[] = $value;
+          }
+        }
+
+        $out["count"]   = count($newdt);
+        $out["result"]  = $newdt;
+
+        if ($input["action"] == "generateTL") {
+          return $out;
+        } else {
+        if ($encode == "true") {
+          $result["result"] = base64_encode(json_encode($out));
+          echo json_encode($result);
+        } else {
+          echo json_encode($out);
         }
       }
-
-      $out["count"]   = count($newdt);
-      $out["result"]  = $newdt;
-
-      if ($input["action"] == "generateTL") {
-        return $out;
-      } else {
-      if ($encode == "true") {
-        $result["result"] = base64_encode(json_encode($out));
-        echo json_encode($result);
-      } else {
-        echo json_encode($out);
-      }
     }
-  }
 
     function generateRealStuffing_post($input, $branch, $encode) {
       // Initialization
